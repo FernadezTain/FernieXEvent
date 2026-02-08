@@ -109,25 +109,48 @@ body {
 .btn-label { font-weight: 700; font-size: 1.15rem; color: #1f2933; display: block; }
 .btn-desc { font-size: 0.85rem; color: #6b7280; margin-top: 2px; }
 
-/* 8. МОДАЛЬНОЕ ОКНО (АНИМИРОВАННОЕ) */
+/* 7. МОДАЛЬНОЕ ОКНО (ПОЛНЫЙ ФИКС) */
 .modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.4);
-    display: flex; justify-content: center; align-items: center;
-    z-index: 10000; visibility: hidden; opacity: 0;
-    backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px);
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: fixed; /* Относительно ОКНА браузера, а не кнопок */
+    top: 0;
+    left: 0;
+    width: 100vw; /* Вся ширина экрана */
+    height: 100vh; /* Вся высота экрана */
+    background: rgba(0, 0, 0, 0.5); /* Затемнение */
+    display: none; /* Изначально полностью убрано */
+    justify-content: center; /* Центр по горизонтали */
+    align-items: center; /* Центр по вертикали */
+    z-index: 999999; /* Максимальный приоритет, выше курсора и кнопок */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    opacity: 0;
+    transition: opacity 0.4s ease;
 }
-.modal-overlay.active { visibility: visible; opacity: 1; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
-.modal-glass {
-    background: rgba(255, 255, 255, 0.9); padding: 40px; border-radius: 35px;
-    max-width: 500px; width: 90%; border: 1px solid #fff;
-    box-shadow: 0 40px 100px rgba(0,0,0,0.2);
-    transform: scale(0.8) translateY(50px); opacity: 0;
-    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.modal-overlay.active .modal-glass { transform: scale(1) translateY(0); opacity: 1; }
 
+/* Когда активно */
+.modal-overlay.active {
+    display: flex; /* Показываем */
+    opacity: 1;
+}
+
+.modal-glass {
+    background: white; /* Для теста поставь белый, потом вернешь rgba */
+    background: rgba(255, 255, 255, 0.95);
+    padding: 40px;
+    border-radius: 30px;
+    width: 90%;
+    max-width: 500px;
+    position: relative; /* Чтобы внутренности окна не улетали */
+    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    
+    /* Анимация появления */
+    transform: scale(0.8) translateY(20px);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-overlay.active .modal-glass {
+    transform: scale(1) translateY(0);
+}
 .copy-box { background: #f8fafc; padding: 20px; border-radius: 18px; margin: 24px 0; position: relative; border: 1px solid #e2e8f0; }
 .copy-box pre { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: #334155; white-space: pre-wrap; }
 .copy-btn { position: absolute; top: 12px; right: 12px; padding: 8px 16px; font-size: 0.75rem; border-radius: 10px; border: none; background: var(--accent-color); color: white; transition: 0.3s; }
