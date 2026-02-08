@@ -162,7 +162,7 @@
 </section>
 
     <section class="links-grid">
-    <a href="https://t.me/ТВОЯ_ССЫЛКА" class="glass-btn" target="_blank">
+    <a href="https://t.me/FernieX" class="glass-btn" target="_blank">
         <span class="btn-icon">📢</span>
         <div class="btn-text">
             <span class="btn-label">Telegram Канал</span>
@@ -170,13 +170,39 @@
         </div>
     </a>
 
-    <a href="https://t.me/ТВОЙ_БОТ" class="glass-btn" target="_blank">
-        <span class="btn-icon">🤖</span>
-        <div class="btn-text">
-            <span class="btn-label">Telegram Бот</span>
-            <span class="btn-desc">Отправить свою работу</span>
+<a href="javascript:void(0)" class="glass-btn" id="openModal">
+    <span class="btn-icon">👤</span>
+    <div class="btn-text">
+        <span class="btn-label">Telegram Profile</span>
+        <span class="btn-desc">Отправить свою работу</span>
+    </div>
+</a>
+
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-glass">
+        <h2>Как отправить свою работу?</h2>
+        
+        <div class="modal-steps">
+            <p>1. Перейдите по кнопке ниже в этом окне.</p>
+            <p>2. В профиле выберите свое творчество (фото/видео/анимация).</p>
+            <p>3. Прикрепите сообщение по шаблону ниже:</p>
         </div>
-    </a>
+
+        <div class="copy-box">
+            <pre id="templateText">@user: 
+Тип творчества: 
+Название работы: 
+Описание: (по желанию)</pre>
+            <button class="copy-btn" id="copyBtn">Скопировать</button>
+        </div>
+
+        <div class="modal-footer">
+            <button class="modal-btn close-btn" id="closeModal">Закрыть</button>
+            <a href="https://t.me/FernieXSupport" target="_blank" class="modal-btn send-btn">Отправить работу</a>
+        </div>
+    </div>
+</div>
+        
 
     <a href="https://t.me/ТВОЯ_ССЫЛКА" class="glass-btn" target="_blank">
         <span class="btn-icon">🗳️</span>
