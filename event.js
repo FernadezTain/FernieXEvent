@@ -52,17 +52,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    document.querySelectorAll('.rule-title').forEach(title => {
-        title.onclick = () => {
-            const content = title.nextElementSibling;
-            content.classList.toggle('active');
+// 4. АККОРДЕОН (С авто-закрытием и улучшенной анимацией)
+document.querySelectorAll('.rule-title').forEach(title => {
+    title.onclick = () => {
+        const parent = title.parentElement;
+        const content = title.nextElementSibling;
+        const isOpen = content.classList.contains('active');
+
+        // Закрываем все открытые пункты
+        document.querySelectorAll('.rule-content').forEach(el => {
+            el.classList.remove('active');
+            el.querySelectorAll('li').forEach(li => li.classList.remove('visible'));
+        });
+
+        // Если нажатый пункт не был открыт — открываем его
+        if (!isOpen) {
+            content.classList.add('active');
+            // Анимация появления списка с задержкой
             content.querySelectorAll('li').forEach((li, i) => {
-                if (content.classList.contains('active')) {
-                    setTimeout(() => li.classList.add('visible'), i * 100);
-                } else {
-                    li.classList.remove('visible');
-                }
+                setTimeout(() => li.classList.add('visible'), 150 + (i * 80));
             });
-        };
-    });
+        }
+    };
 });
