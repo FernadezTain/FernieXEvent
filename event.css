@@ -12,14 +12,18 @@
     --glass-border: rgba(255, 255, 255, 0.2);
     --accent-color: #667eea;
     --accent-hover: #764ba2;
+    --liquid-blue: rgba(64, 156, 255, 0.3);
+    --liquid-purple: rgba(157, 78, 221, 0.3);
+    --liquid-green: rgba(72, 187, 120, 0.3);
 }
 
 body {
-    background: #f0f4ff;
-    color: #1f2933;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    color: #f1f5f9;
     line-height: 1.6;
     min-height: 100vh;
     overflow-x: hidden;
+    perspective: 1000px;
 }
 
 /* Убедимся, что body не прокручивается при открытом модальном окне */
@@ -28,12 +32,45 @@ body.modal-open {
     height: 100vh;
 }
 
+/* Анимированный фон с пузырями и переливами */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, var(--liquid-blue) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, var(--liquid-purple) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, var(--liquid-green) 0%, transparent 50%);
+    z-index: -2;
+    opacity: 0.5;
+    animation: liquidFlow 30s ease-in-out infinite alternate;
+}
+
+@keyframes liquidFlow {
+    0% {
+        background-position: 0% 0%, 100% 100%, 50% 50%;
+        filter: hue-rotate(0deg);
+    }
+    50% {
+        background-position: 100% 0%, 0% 100%, 50% 70%;
+        filter: hue-rotate(180deg);
+    }
+    100% {
+        background-position: 0% 100%, 100% 0%, 50% 30%;
+        filter: hue-rotate(360deg);
+    }
+}
+
 /* 2. АНИМИРОВАННЫЙ ФОН (BLOBS) */
 .bg-blobs {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
     z-index: -1;
-    background: radial-gradient(circle at 50% 50%, #eef2ff, #e0e7ff);
+    background: radial-gradient(circle at 50% 50%, rgba(238, 242, 255, 0.2), rgba(224, 231, 255, 0.1));
+    mix-blend-mode: overlay;
 }
 
 .blob {
@@ -43,91 +80,483 @@ body.modal-open {
     opacity: 0.5;
     animation: floatBlob 20s infinite alternate ease-in-out;
 }
-.blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #a78bfa; }
-.blob-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: #60a5fa; }
-.blob-3 { top: 30%; left: 30%; width: 40vw; height: 40vw; background: #f472b6; }
+.blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #a78bfa; animation-delay: 0s; }
+.blob-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: #60a5fa; animation-delay: 5s; }
+.blob-3 { top: 30%; left: 30%; width: 40vw; height: 40vw; background: #f472b6; animation-delay: 10s; }
 
 @keyframes floatBlob { 
     to { transform: translate(40px, -40px) scale(1.1); } 
 }
 
-/* 3. ОБЩАЯ АНИМАЦИЯ ПОЯВЛЕНИЯ КОНТЕНТА */
-.header, .card, .links-grid, .footer {
-    opacity: 0;
-    transform: translateY(40px);
-    animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+/* Плавающие частицы */
+.floating-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
 }
 
-.header { animation-delay: 0.1s; }
-.card:nth-of-type(1) { animation-delay: 0.2s; }
-.card:nth-of-type(2) { animation-delay: 0.3s; }
-.links-grid { animation-delay: 0.4s; }
-.footer { animation-delay: 0.5s; }
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%);
+    animation: floatParticle 15s infinite linear;
+}
 
-@keyframes fadeInUp {
-    to { opacity: 1; transform: translateY(0); }
+@keyframes floatParticle {
+    0% {
+        transform: translateY(0) translateX(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100vh) translateX(100px);
+        opacity: 0;
+    }
+}
+
+/* 3. АНИМАЦИИ ПОЯВЛЕНИЯ КОНТЕНТА С ЖИДКИМ ЭФФЕКТОМ */
+.header, .card, .links-grid, .footer {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+    filter: blur(10px);
+    animation: fadeInLiquid 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.header { animation-delay: 0.2s; }
+.card:nth-of-type(1) { animation-delay: 0.4s; }
+.card:nth-of-type(2) { animation-delay: 0.6s; }
+.links-grid { animation-delay: 0.8s; }
+.footer { animation-delay: 1s; }
+
+@keyframes fadeInLiquid {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+        filter: blur(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
 }
 
 /* 4. ШАПКА И КОНТЕЙНЕР */
-.header { text-align: center; padding: 80px 20px 40px; }
+.header { 
+    text-align: center; 
+    padding: 100px 20px 80px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Эффект жидкого стекла для заголовка */
+.header::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(64, 156, 255, 0.2) 0%, transparent 70%);
+    filter: blur(60px);
+    animation: pulseGlow 4s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% { 
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% { 
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+}
+
 .header h1 { 
     font-size: clamp(2.5rem, 10vw, 4rem);
-    background: linear-gradient(135deg, #4f46e5, #9333ea);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
+    background: linear-gradient(45deg, #60a5fa, #a78bfa, #34d399);
+    -webkit-background-clip: text; 
+    background-clip: text; 
+    color: transparent;
     letter-spacing: -1px;
+    position: relative;
+    display: inline-block;
+    text-shadow: 0 0 30px rgba(96, 165, 250, 0.3);
+    animation: liquidText 6s ease-in-out infinite;
 }
 
-.container { max-width: 900px; margin: 0 auto 60px; padding: 0 20px; }
+@keyframes liquidText {
+    0%, 100% {
+        filter: drop-shadow(0 0 10px rgba(96, 165, 250, 0.5))
+               drop-shadow(0 0 20px rgba(167, 139, 250, 0.3))
+               drop-shadow(0 0 30px rgba(52, 211, 153, 0.2));
+        background-position: 0% 50%;
+    }
+    50% {
+        filter: drop-shadow(0 0 15px rgba(96, 165, 250, 0.7))
+               drop-shadow(0 0 25px rgba(167, 139, 250, 0.5))
+               drop-shadow(0 0 35px rgba(52, 211, 153, 0.3));
+        background-position: 100% 50%;
+    }
+}
 
-/* 5. КАРТОЧКИ (СТЕКЛО) */
+.header p {
+    font-size: 1.3rem;
+    color: #cbd5e1;
+    max-width: 600px;
+    margin: 0 auto;
+    position: relative;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.container { 
+    max-width: 1000px; 
+    margin: 0 auto 100px; 
+    padding: 0 20px; 
+    position: relative;
+}
+
+/* 5. КАРТОЧКИ (REAL LIQUID GLASS) */
 .card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border-radius: 28px;
-    border: 1px solid var(--glass-border);
-    padding: clamp(24px, 5vw, 40px);
-    margin-bottom: 24px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.05);
-    transition: transform 0.3s ease, border-color 0.3s ease;
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    padding: 40px;
+    margin-bottom: 35px;
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    z-index: 1;
+    transform-style: preserve-3d;
 }
-.card:hover { border-color: rgba(255,255,255,0.4); }
 
-/* 6. АККОРДЕОН */
-.rule { margin-bottom: 12px; border-radius: 18px; background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(255,255,255,0.2); overflow: hidden; }
-.rule-title { width: 100%; padding: 20px 24px; border: none; background: transparent; text-align: left; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
-.rule-content { max-height: 0; overflow: hidden; transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1); background: rgba(255, 255, 255, 0.1); }
-.rule-content.active { max-height: 2000px; }
-.rule-list { padding: 24px; list-style: none; }
-.rule-list li { margin-bottom: 14px; padding-left: 24px; position: relative; opacity: 0; transform: translateX(-10px); }
-.rule-list li.visible { opacity: 1; transform: translateX(0); transition: 0.4s ease forwards; }
-.rule-list li::before { content: '→'; color: var(--accent-color); position: absolute; left: 0; font-weight: bold; }
+/* Жидкие волны внутри стекла */
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.05) 50%,
+        transparent 70%
+    );
+    animation: liquidWave 20s linear infinite;
+    z-index: -1;
+}
 
-/* 7. КНОПКИ ССЫЛОК */
-.links-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 40px; }
+@keyframes liquidWave {
+    0% { transform: translateX(-100%) translateY(0); }
+    100% { transform: translateX(100%) translateY(20px); }
+}
+
+/* Отражения и блики */
+.card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        to bottom right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(30deg);
+    animation: shine 8s infinite;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes shine {
+    0%, 100% { transform: rotate(30deg) translateX(-100%); }
+    50% { transform: rotate(30deg) translateX(100%); }
+}
+
+.card:hover {
+    transform: translateY(-5px) scale(1.01) rotateX(2deg) rotateY(2deg);
+    box-shadow: 
+        0 30px 60px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 0 40px rgba(64, 156, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.card h2 {
+    margin-bottom: 30px;
+    font-size: 2rem;
+    position: relative;
+    display: inline-block;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.card h2::after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 0;
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, #60a5fa, #a78bfa);
+    border-radius: 2px;
+    animation: liquidLine 4s ease-in-out infinite;
+}
+
+@keyframes liquidLine {
+    0%, 100% { 
+        width: 80px;
+        background-position: 0% 50%;
+    }
+    50% { 
+        width: 120px;
+        background-position: 100% 50%;
+    }
+}
+
+/* 6. АККОРДЕОН С ЖИДКИМ ЭФФЕКТОМ */
+.rule { 
+    margin-bottom: 20px; 
+    border-radius: 20px; 
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+/* Капли на поверхности */
+.rule::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 8px;
+    height: 8px;
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(1px);
+    animation: dropFall 3s infinite;
+}
+
+@keyframes dropFall {
+    0%, 100% {
+        transform: translateY(0);
+        opacity: 0;
+    }
+    50% {
+        transform: translateY(30px);
+        opacity: 1;
+    }
+}
+
+.rule:hover {
+    transform: translateX(10px);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 
+        0 15px 30px rgba(0, 0, 0, 0.2),
+        0 0 20px rgba(64, 156, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.rule-title { 
+    width: 100%; 
+    padding: 24px 30px; 
+    border: none; 
+    background: transparent; 
+    text-align: left; 
+    font-weight: 600; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    color: #f1f5f9; 
+    transition: all 0.3s ease; 
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.rule-title:hover {
+    color: #60a5fa;
+    text-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+}
+
+.rule-title::after {
+    content: '▼';
+    font-size: 0.9rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #a78bfa;
+    text-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
+}
+
+.rule-title.active::after {
+    transform: rotate(180deg) scale(1.2);
+    color: #34d399;
+}
+
+.rule-content { 
+    max-height: 0; 
+    overflow: hidden; 
+    padding: 0 30px; 
+    background: rgba(0, 0, 0, 0.2); 
+    transition: max-height 1s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+.rule-content.active { 
+    max-height: 2000px; 
+    padding: 30px; 
+}
+
+.rule-list { 
+    padding-left: 30px; 
+    list-style: none; 
+}
+.rule-list li { 
+    margin-bottom: 15px; 
+    color: #cbd5e1; 
+    position: relative; 
+    padding-left: 35px; 
+    opacity: 0;
+    transform: translateX(-20px);
+    animation: liquidAppear 0.6s forwards;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes liquidAppear {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.rule-list li::before { 
+    content: '💧'; 
+    position: absolute; 
+    left: 0; 
+    font-size: 1.2rem; 
+    filter: drop-shadow(0 0 5px rgba(96, 165, 250, 0.5));
+    animation: dropPulse 2s infinite;
+}
+
+@keyframes dropPulse {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 5px rgba(96, 165, 250, 0.5));
+    }
+    50% {
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 10px rgba(96, 165, 250, 0.8));
+    }
+}
+
+.rule-list li.visible { 
+    opacity: 1; 
+    transform: translateX(0); 
+    transition: 0.4s ease forwards; 
+}
+
+/* 7. КНОПКИ ССЫЛОК С ЖИДКИМ ЭФФЕКТОМ */
+.links-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+    gap: 16px; 
+    margin-top: 40px; 
+}
 .glass-btn {
-    text-decoration: none; color: inherit; display: flex; align-items: center; gap: 16px; padding: 24px;
-    background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 22px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-decoration: none; 
+    color: inherit; 
+    display: flex; 
+    align-items: center; 
+    gap: 16px; 
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.15); 
+    backdrop-filter: blur(15px); 
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2); 
+    border-radius: 22px; 
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
 }
-.glass-btn:hover { background: rgba(255, 255, 255, 0.25); transform: translateY(-8px) scale(1.02); border-color: var(--accent-color); box-shadow: 0 20px 40px rgba(102, 126, 234, 0.15); }
-.btn-icon { font-size: 2rem; background: rgba(255, 255, 255, 0.2); width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: 16px; }
-.btn-label { font-weight: 700; font-size: 1.15rem; color: #1f2933; display: block; }
-.btn-desc { font-size: 0.85rem; color: #6b7280; margin-top: 2px; }
+
+.glass-btn:hover { 
+    background: rgba(255, 255, 255, 0.25); 
+    transform: translateY(-8px) scale(1.02) rotateX(1deg) rotateY(1deg); 
+    border-color: #60a5fa; 
+    box-shadow: 0 20px 40px rgba(96, 165, 250, 0.3); 
+}
+
+.btn-icon { 
+    font-size: 2rem; 
+    background: rgba(255, 255, 255, 0.2); 
+    width: 56px; 
+    height: 56px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    border-radius: 16px; 
+    transition: all 0.3s ease;
+}
+.glass-btn:hover .btn-icon {
+    transform: scale(1.1) rotate(5deg);
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.btn-label { 
+    font-weight: 700; 
+    font-size: 1.15rem; 
+    color: #f1f5f9; 
+    display: block; 
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.btn-desc { 
+    font-size: 0.85rem; 
+    color: #cbd5e1; 
+    margin-top: 2px; 
+}
 
 /* 8. МОДАЛЬНОЕ ОКНО (ИСПРАВЛЕННЫЙ СТИЛЬ) */
 .modal-overlay {
     position: fixed;
-    inset: 0; /* top:0, left:0, right:0, bottom:0 */
+    inset: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.6);
-    display: none; /* Переключаем через JS */
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
     justify-content: center;
     align-items: center;
-    z-index: 10000; /* Должен быть выше всего */
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
+    z-index: 10000;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 /* Класс для активации */
@@ -142,11 +571,12 @@ body.modal-open {
     border-radius: 30px;
     width: 90%;
     max-width: 480px;
-    margin: 0; /* Убираем все внешние отступы */
-    box-shadow: 0 30px 70px rgba(0,0,0,0.3);
+    margin: 0;
+    box-shadow: 
+        0 30px 70px rgba(0,0,0,0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.8);
-    
-    /* Анимация */
     animation: modalAppear 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
@@ -169,12 +599,13 @@ body.modal-open {
 }
 
 .copy-box { 
-    background: #f8fafc; 
+    background: rgba(248, 250, 252, 0.9); 
     padding: 20px; 
     border-radius: 18px; 
     margin: 24px 0; 
     position: relative; 
-    border: 1px solid #e2e8f0; 
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    backdrop-filter: blur(10px);
 }
 .copy-box pre { 
     font-family: 'JetBrains Mono', monospace; 
@@ -193,12 +624,12 @@ body.modal-open {
     border: none; 
     background: var(--accent-color); 
     color: white; 
-    transition: 0.3s; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
 }
 .copy-btn:hover { 
     background: var(--accent-hover); 
-    transform: scale(1.05); 
+    transform: scale(1.05) rotate(5deg); 
 }
 
 .modal-footer { 
@@ -213,12 +644,14 @@ body.modal-open {
     border: none; 
     font-weight: 600; 
     font-size: 0.95rem; 
-    transition: 0.3s; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    transform-style: preserve-3d;
 }
 .close-btn { 
-    background: #f1f5f9; 
+    background: rgba(241, 245, 249, 0.9); 
     color: #64748b; 
+    backdrop-filter: blur(10px);
 }
 .send-btn { 
     background: var(--accent-color); 
@@ -226,10 +659,12 @@ body.modal-open {
     text-decoration: none; 
     text-align: center; 
     display: inline-block;
+    backdrop-filter: blur(10px);
 }
 .modal-btn:hover { 
     filter: brightness(0.95); 
-    transform: translateY(-2px); 
+    transform: translateY(-2px) scale(1.02) rotateX(1deg) rotateY(1deg); 
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 /* 9. КУРСОР (ПК) */
@@ -250,8 +685,15 @@ body.modal-open {
     border-radius: 50%; 
     transform: translate(-50%, -50%); 
     filter: url('#liquid-distortion'); 
-    transition: width 0.3s, height 0.3s; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: blobPulse 3s ease-in-out infinite;
 }
+
+@keyframes blobPulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.1); }
+}
+
 .lens-flare { 
     position: absolute; 
     width: 15px; 
@@ -261,9 +703,47 @@ body.modal-open {
     transform: translate(-50%, -50%); 
     box-shadow: 0 0 20px white; 
     mix-blend-mode: overlay; 
+    animation: flarePulse 2s ease-in-out infinite;
 }
 
-/* 10. МОБИЛЬНАЯ ОПТИМИЗАЦИЯ */
+@keyframes flarePulse {
+    0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+}
+
+/* 10. ФУТЕР С ЖИДКИМ ЭФФЕКТОМ */
+.footer {
+    text-align: center;
+    padding: 60px;
+    font-size: 1rem;
+    color: #94a3b8;
+    position: relative;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 2px;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(96, 165, 250, 0.6),
+        rgba(167, 139, 250, 0.6),
+        transparent);
+    animation: liquidStream 4s linear infinite;
+}
+
+@keyframes liquidStream {
+    0% { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+}
+
+/* 11. МОБИЛЬНАЯ ОПТИМИЗАЦИЯ */
 @media (max-width: 991px) {
     * { cursor: auto !important; }
     .cursor-wrapper, svg { display: none !important; }
@@ -277,15 +757,20 @@ body.modal-open {
     .modal-glass { padding: 30px 20px; }
     .glass-btn { padding: 20px; }
     .btn-icon { width: 48px; height: 48px; font-size: 1.5rem; }
+    .card { padding: 30px 20px; }
+    .rule-title { padding: 20px; }
+    .rule-content.active { padding: 20px; }
 }
 
 /* Дополнительные медиа-запросы для очень маленьких экранов */
 @media (max-width: 480px) {
     .header h1 { font-size: 2rem; }
-    .card { padding: 20px; }
-    .modal-glass { padding: 20px 15px; width: 95%; }
+    .card { padding: 20px; border-radius: 20px; }
+    .modal-glass { padding: 20px 15px; width: 95%; border-radius: 20px; }
     .modal-footer { flex-direction: column; }
     .modal-btn { width: 100%; text-align: center; }
     .glass-btn { flex-direction: column; text-align: center; }
     .btn-text { text-align: center; }
+    .footer { padding: 40px 20px; }
+    .footer::before { width: 200px; }
 }
