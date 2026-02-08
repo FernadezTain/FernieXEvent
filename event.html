@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Files - Загрузка файлов</title>
+    <link rel="stylesheet" href="event.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="40" height="40" rx="12" fill="url(#gradient)"/>
+                    <path d="M20 10L28 16V24L20 30L12 24V16L20 10Z" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+                    <defs>
+                        <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40">
+                            <stop offset="0%" stop-color="#6366f1"/>
+                            <stop offset="100%" stop-color="#8b5cf6"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1>Event Files</h1>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalFiles">0</span>
+                    <span class="stat-label">Файлов загружено</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="upload-zone" id="uploadZone">
+            <input type="file" id="fileInput" multiple hidden>
+            
+            <div class="upload-content" id="uploadContent">
+                <div class="upload-icon">
+                    <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="40" cy="40" r="38" stroke="url(#gradientCircle)" stroke-width="4"/>
+                        <path d="M40 25V55M40 25L30 35M40 25L50 35" stroke="url(#gradientArrow)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M25 50H55" stroke="url(#gradientArrow)" stroke-width="3" stroke-linecap="round"/>
+                        <defs>
+                            <linearGradient id="gradientCircle" x1="0" y1="0" x2="80" y2="80">
+                                <stop offset="0%" stop-color="#6366f1"/>
+                                <stop offset="100%" stop-color="#8b5cf6"/>
+                            </linearGradient>
+                            <linearGradient id="gradientArrow" x1="25" y1="25" x2="55" y2="55">
+                                <stop offset="0%" stop-color="#6366f1"/>
+                                <stop offset="100%" stop-color="#8b5cf6"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h2>Перетащите файлы сюда</h2>
+                <p class="upload-description">или нажмите для выбора файлов (Ctrl+V также работает)</p>
+                <button class="btn-primary" id="selectBtn">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 4V16M4 10H16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Выбрать файлы
+                </button>
+                <p class="file-limit">Максимальный размер файла: 20 МБ</p>
+            </div>
+
+            <div class="uploading-overlay" id="uploadingOverlay">
+                <div class="spinner"></div>
+                <p>Загрузка файлов...</p>
+            </div>
+        </div>
+
+        <div class="files-section" id="filesSection">
+            <div class="section-header">
+                <h3>Загруженные файлы</h3>
+                <button class="btn-secondary" id="clearBtn">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 4H14M6 4V2H10V4M13 4V14H3V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    Очистить всё
+                </button>
+            </div>
+            <div class="files-grid" id="filesGrid">
+                <!-- Files will be added here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <div class="toast-content">
+            <svg class="toast-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2"/>
+                <path d="M6 10L9 13L14 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <script src="event.js"></script>
+</body>
+</html>
