@@ -84,3 +84,32 @@ interactiveElements.forEach(el => {
         }
     });
 });
+// Логика модального окна
+const modal = document.getElementById('modalOverlay');
+const openBtn = document.getElementById('openModal');
+const closeBtn = document.getElementById('closeModal');
+const copyBtn = document.getElementById('copyBtn');
+
+// Открыть
+openBtn.addEventListener('click', () => {
+    modal.classList.add('active');
+});
+
+// Закрыть
+closeBtn.addEventListener('click', () => {
+    modal.classList.remove('active');
+});
+
+// Закрыть при клике на фон
+modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.classList.remove('active');
+});
+
+// Копирование
+copyBtn.addEventListener('click', () => {
+    const text = document.getElementById('templateText').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        copyBtn.innerText = 'Скопировано!';
+        setTimeout(() => copyBtn.innerText = 'Скопировать', 2000);
+    });
+});
