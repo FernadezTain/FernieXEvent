@@ -2,505 +2,250 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    cursor: none; /* Скрываем стандартный курсор для погружения */
 }
 
 :root {
-    --glass-primary: rgba(255, 255, 255, 0.1);
-    --glass-secondary: rgba(255, 255, 255, 0.05);
+    /* Цвета для жидкого эффекта */
+    --glass-bg: rgba(255, 255, 255, 0.05);
     --glass-border: rgba(255, 255, 255, 0.2);
-    --glass-highlight: rgba(255, 255, 255, 0.3);
+    --glass-highlight: rgba(255, 255, 255, 0.5);
     --glass-shadow: rgba(0, 0, 0, 0.1);
-    --liquid-blue: rgba(64, 156, 255, 0.3);
-    --liquid-purple: rgba(157, 78, 221, 0.3);
-    --liquid-green: rgba(72, 187, 120, 0.3);
+    --accent-color: #667eea;
+    --text-main: #1f2933;
 }
 
 body {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-    color: #f1f5f9;
+    background: #f0f4ff;
+    color: var(--text-main);
     line-height: 1.6;
     min-height: 100vh;
-    position: relative;
     overflow-x: hidden;
+    position: relative;
 }
 
-/* Анимированный фон с пузырями и переливами */
-body::before {
-    content: '';
+/* --- ФОНОВЫЕ ПЯТНА (чтобы стеклу было что преломлять) --- */
+.bg-blobs {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: 
-        radial-gradient(circle at 20% 80%, var(--liquid-blue) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, var(--liquid-purple) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, var(--liquid-green) 0%, transparent 50%);
     z-index: -1;
-    opacity: 0.5;
-    animation: liquidFlow 30s ease-in-out infinite alternate;
+    overflow: hidden;
+    background: radial-gradient(circle at 50% 50%, #eef2ff, #e0e7ff);
 }
 
-@keyframes liquidFlow {
-    0% {
-        background-position: 0% 0%, 100% 100%, 50% 50%;
-        filter: hue-rotate(0deg);
-    }
-    50% {
-        background-position: 100% 0%, 0% 100%, 50% 70%;
-        filter: hue-rotate(180deg);
-    }
-    100% {
-        background-position: 0% 100%, 100% 0%, 50% 30%;
-        filter: hue-rotate(360deg);
-    }
-}
-
-/* Плавающие частицы */
-.floating-particles {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: -1;
-}
-
-.particle {
+.blob {
     position: absolute;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%);
-    animation: floatParticle 15s infinite linear;
+    filter: blur(60px);
+    opacity: 0.6;
+    animation: floatBlob 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes floatParticle {
-    0% {
-        transform: translateY(0) translateX(0);
-        opacity: 0;
-    }
-    10% {
-        opacity: 1;
-    }
-    90% {
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(-100vh) translateX(100px);
-        opacity: 0;
-    }
+.blob-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #a78bfa; animation-delay: 0s; }
+.blob-2 { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: #60a5fa; animation-delay: -5s; }
+.blob-3 { top: 40%; left: 40%; width: 40vw; height: 40vw; background: #f472b6; animation-delay: -10s; }
+
+@keyframes floatBlob {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(50px, -50px) scale(1.1); }
 }
 
+/* --- СТИЛИ СТЕКЛА (LIQUID GLASS) --- */
+.card {
+    /* 1. Основа прозрачности */
+    background: var(--glass-bg);
+    
+    /* 2. Эффект Линзы: сильное размытие + повышение насыщенности цветов сзади */
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    
+    /* 3. Границы и свет */
+    border-radius: 24px;
+    border: 1px solid var(--glass-border);
+    border-top: 1px solid var(--glass-highlight); /* Блик сверху */
+    border-bottom: 1px solid transparent;
+    
+    /* 4. Объем (Толщина стекла) через внутренние тени */
+    box-shadow: 
+        0 20px 40px var(--glass-shadow),    /* Тень от карточки */
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1), /* Тонкая кромка */
+        inset 0 0 20px rgba(255, 255, 255, 0.1); /* Внутреннее свечение */
+
+    margin-bottom: 28px;
+    padding: 32px;
+    transition: transform 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1), box-shadow 0.4s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px) scale(1.005);
+    box-shadow: 
+        0 30px 60px rgba(0, 0, 0, 0.15),
+        inset 0 0 30px rgba(255, 255, 255, 0.3); /* Стекло становится светлее */
+}
+
+/* --- ЗАГОЛОВКИ И ТЕКСТ --- */
 .header {
     text-align: center;
-    padding: 100px 20px 80px;
+    padding: 80px 20px 60px;
     position: relative;
-    overflow: hidden;
-}
-
-/* Эффект жидкого стекла для заголовка */
-.header::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(64, 156, 255, 0.2) 0%, transparent 70%);
-    filter: blur(60px);
-    animation: pulseGlow 4s ease-in-out infinite;
-}
-
-@keyframes pulseGlow {
-    0%, 100% { 
-        opacity: 0.5;
-        transform: translate(-50%, -50%) scale(1);
-    }
-    50% { 
-        opacity: 0.8;
-        transform: translate(-50%, -50%) scale(1.2);
-    }
+    z-index: 2;
 }
 
 .header h1 {
     font-size: 3.5rem;
-    margin-bottom: 20px;
-    background: linear-gradient(45deg, #60a5fa, #a78bfa, #34d399);
+    background: linear-gradient(135deg, #4f46e5, #9333ea);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    position: relative;
-    display: inline-block;
-    text-shadow: 0 0 30px rgba(96, 165, 250, 0.3);
-    animation: liquidText 6s ease-in-out infinite;
+    filter: drop-shadow(0 2px 10px rgba(99, 102, 241, 0.2));
 }
 
-@keyframes liquidText {
-    0%, 100% {
-        filter: drop-shadow(0 0 10px rgba(96, 165, 250, 0.5))
-               drop-shadow(0 0 20px rgba(167, 139, 250, 0.3))
-               drop-shadow(0 0 30px rgba(52, 211, 153, 0.2));
-        background-position: 0% 50%;
-    }
-    50% {
-        filter: drop-shadow(0 0 15px rgba(96, 165, 250, 0.7))
-               drop-shadow(0 0 25px rgba(167, 139, 250, 0.5))
-               drop-shadow(0 0 35px rgba(52, 211, 153, 0.3));
-        background-position: 100% 50%;
-    }
-}
-
-.header p {
-    font-size: 1.3rem;
-    color: #cbd5e1;
-    max-width: 600px;
-    margin: 0 auto;
-    position: relative;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
+.header p { color: #52606d; font-size: 1.2rem; }
 
 .container {
-    max-width: 1000px;
-    margin: 0 auto 100px;
+    max-width: 900px;
+    margin: 0 auto 80px;
     padding: 0 20px;
     position: relative;
+    z-index: 2;
 }
 
-/* Real Liquid Glass эффект для карточек */
-.card {
-    position: relative;
-    background: var(--glass-primary);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-radius: 24px;
-    padding: 40px;
-    margin-bottom: 35px;
-    box-shadow: 
-        0 20px 40px var(--glass-shadow),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1),
-        0 0 0 1px rgba(255, 255, 255, 0.05);
-    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
-    z-index: 1;
-}
-
-/* Жидкие волны внутри стекла */
-.card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-        45deg,
-        transparent 30%,
-        rgba(255, 255, 255, 0.05) 50%,
-        transparent 70%
-    );
-    animation: liquidWave 20s linear infinite;
-    z-index: -1;
-}
-
-@keyframes liquidWave {
-    0% { transform: translateX(-100%) translateY(0); }
-    100% { transform: translateX(100%) translateY(20px); }
-}
-
-/* Отражения и блики */
-.card::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-        to bottom right,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.1) 50%,
-        rgba(255, 255, 255, 0) 100%
-    );
-    transform: rotate(30deg);
-    animation: shine 8s infinite;
-    pointer-events: none;
-    z-index: -1;
-}
-
-@keyframes shine {
-    0%, 100% { transform: rotate(30deg) translateX(-100%); }
-    50% { transform: rotate(30deg) translateX(100%); }
-}
-
-/* Преломление света */
-.light-refraction {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(
-        circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-        rgba(255, 255, 255, 0.15) 0%,
-        transparent 50%
-    );
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
-    border-radius: 24px;
-    z-index: 0;
-}
-
-.card:hover .light-refraction {
-    opacity: 1;
-}
-
-.card:hover {
-    transform: translateY(-5px) scale(1.01);
-    box-shadow: 
-        0 30px 60px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2),
-        0 0 0 1px rgba(255, 255, 255, 0.1),
-        0 0 40px rgba(64, 156, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.card h2 {
-    margin-bottom: 30px;
-    font-size: 2rem;
-    position: relative;
-    display: inline-block;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.card h2::after {
-    content: '';
-    position: absolute;
-    bottom: -12px;
-    left: 0;
-    width: 80px;
-    height: 3px;
-    background: linear-gradient(90deg, #60a5fa, #a78bfa);
-    border-radius: 2px;
-    animation: liquidLine 4s ease-in-out infinite;
-}
-
-@keyframes liquidLine {
-    0%, 100% { 
-        width: 80px;
-        background-position: 0% 50%;
-    }
-    50% { 
-        width: 120px;
-        background-position: 100% 50%;
-    }
-}
-
-/* Жидкое стекло для правил */
+/* --- АККОРДЕОН ВНУТРИ СТЕКЛА --- */
 .rule {
-    margin-bottom: 20px;
-    border-radius: 20px;
+    margin-bottom: 12px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.2); /* Более матовый слой внутри */
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
 .rule:hover {
-    transform: translateX(10px);
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 
-        0 15px 30px rgba(0, 0, 0, 0.2),
-        0 0 20px rgba(64, 156, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-}
-
-/* Капли на поверхности */
-.rule::before {
-    content: '';
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 8px;
-    height: 8px;
-    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%);
-    border-radius: 50%;
-    filter: blur(1px);
-    animation: dropFall 3s infinite;
-}
-
-@keyframes dropFall {
-    0%, 100% {
-        transform: translateY(0);
-        opacity: 0;
-    }
-    50% {
-        transform: translateY(30px);
-        opacity: 1;
-    }
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .rule-title {
     width: 100%;
-    background: transparent;
-    padding: 24px 30px;
-    font-size: 1.2rem;
+    padding: 20px 24px;
+    font-size: 1.1rem;
     font-weight: 600;
     border: none;
+    background: transparent;
     text-align: left;
-    cursor: pointer;
+    cursor: none; /* Кастомный курсор */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: #f1f5f9;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.rule-title:hover {
-    color: #60a5fa;
-    text-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+    color: #1f2933;
 }
 
 .rule-title::after {
-    content: '▼';
-    font-size: 0.9rem;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    color: #a78bfa;
-    text-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
+    content: '+';
+    font-size: 1.5rem;
+    transition: transform 0.3s ease;
 }
 
 .rule-title.active::after {
-    transform: rotate(180deg) scale(1.2);
-    color: #34d399;
+    transform: rotate(45deg);
 }
 
 .rule-content {
     max-height: 0;
     overflow: hidden;
-    padding: 0 30px;
-    background: rgba(0, 0, 0, 0.2);
-    transition: max-height 1s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: max-height 0.5s cubic-bezier(0, 1, 0, 1);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .rule-content.active {
-    max-height: 2000px;
-    padding: 30px;
+    max-height: 1000px;
 }
 
 .rule-list {
-    padding-left: 30px;
+    padding: 24px;
     list-style: none;
 }
 
 .rule-list li {
-    margin-bottom: 15px;
-    color: #cbd5e1;
+    margin-bottom: 10px;
     position: relative;
-    padding-left: 35px;
+    padding-left: 20px;
     opacity: 0;
-    transform: translateX(-20px);
-    animation: liquidAppear 0.6s forwards;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    transform: translateY(10px);
+}
+
+.rule-list li.visible {
+    animation: slideUpFade 0.4s forwards;
 }
 
 .rule-list li::before {
-    content: '💧';
+    content: '•';
+    color: var(--accent-color);
     position: absolute;
     left: 0;
-    font-size: 1.2rem;
-    filter: drop-shadow(0 0 5px rgba(96, 165, 250, 0.5));
-    animation: dropPulse 2s infinite;
+    font-weight: bold;
 }
 
-@keyframes liquidAppear {
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes dropPulse {
-    0%, 100% {
-        transform: scale(1);
-        filter: drop-shadow(0 0 5px rgba(96, 165, 250, 0.5));
-    }
-    50% {
-        transform: scale(1.2);
-        filter: drop-shadow(0 0 10px rgba(96, 165, 250, 0.8));
-    }
+@keyframes slideUpFade {
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .footer {
     text-align: center;
-    padding: 60px;
-    font-size: 1rem;
-    color: #94a3b8;
+    padding: 40px;
+    color: #6b7280;
     position: relative;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    z-index: 2;
 }
 
-.footer::before {
-    content: '';
-    position: absolute;
+/* --- КУРСОР ЖИДКОСТИ (LIQUID CURSOR) --- */
+.cursor-wrapper {
+    position: fixed;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 400px;
-    height: 2px;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(96, 165, 250, 0.6),
-        rgba(167, 139, 250, 0.6),
-        transparent);
-    animation: liquidStream 4s linear infinite;
+    left: 0;
+    pointer-events: none;
+    z-index: 9999;
 }
 
-@keyframes liquidStream {
-    0% { background-position: -400px 0; }
-    100% { background-position: 400px 0; }
+/* 1. "Жидкое" пятно */
+.liquid-blob {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(167, 139, 250, 0.4) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    /* Применяем SVG фильтр */
+    filter: url('#liquid-distortion'); 
+    mix-blend-mode: hard-light; /* Смешивание с фоном */
+    opacity: 0.8;
 }
 
-/* Анимации для загрузки */
-@keyframes fadeInLiquid {
-    from {
-        opacity: 0;
-        transform: translateY(30px) scale(0.95);
-        filter: blur(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        filter: blur(0);
-    }
+/* 2. Блик линзы (Lens Flare) */
+.lens-flare {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px var(--accent-color);
+    mix-blend-mode: overlay;
+    transition: width 0.2s, height 0.2s;
 }
 
-.card, .header, .footer {
-    animation: fadeInLiquid 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    opacity: 0;
+/* Состояние нажатия */
+body.is-pressed .lens-flare {
+    width: 15px;
+    height: 15px;
+    opacity: 0.5;
 }
 
-.header { animation-delay: 0.2s; }
-.card { animation-delay: 0.4s; }
-.footer { animation-delay: 0.6s; }
-
-/* Глубина и перспектива */
-body {
-    perspective: 1000px;
-}
-
-.card {
-    transform-style: preserve-3d;
-}
-
-.card:hover {
-    transform: translateY(-5px) scale(1.01) rotateX(2deg) rotateY(2deg);
+body.is-pressed .liquid-blob {
+    width: 130px;
+    height: 130px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.6) 0%, rgba(255, 255, 255, 0) 70%);
 }
