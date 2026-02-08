@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 // Эффект увеличения курсора при наведении на кнопки
-const interactiveElements = document.querySelectorAll('button, a, .rule-title');
+const interactiveElements = document.querySelectorAll('button, a, .rule-title, .glass-btn');
 
 interactiveElements.forEach(el => {
     el.addEventListener('mouseenter', () => {
