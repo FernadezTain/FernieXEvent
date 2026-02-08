@@ -1,7 +1,7 @@
 // GitHub Configuration - ВАЖНО: ЗАМЕНИТЕ НА СВОИ ДАННЫЕ!
 const GITHUB_CONFIG = {
-    owner: 'YOUR_GITHUB_USERNAME',        // Ваш GitHub username
-    repo: 'YOUR_REPO_NAME',               // Название репозитория
+    owner: 'FernadezTain',        // Ваш GitHub username
+    repo: 'FernieXEvent',               // Название репозитория
     branch: 'main',                       // Или 'master'
 };
 
