@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. ПЕРЕМЕННЫЕ
+// 1. ПЕРЕМЕННЫЕ
     const modal = document.getElementById('modalOverlay');
     const openBtn = document.getElementById('openModal');
     const closeBtn = document.getElementById('closeModal');
@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => modal.style.display = 'none', 400); // Плавное исчезновение
             document.body.style.overflow = '';
         };
-
         if (closeBtn) closeBtn.onclick = close;
         modal.onclick = (e) => { if (e.target === modal) close(); };
     }
@@ -51,6 +50,22 @@ document.addEventListener('DOMContentLoaded', () => {
             el.onmouseleave = () => { blob.style.width = '150px'; blob.style.height = '150px'; };
         });
     }
+
+    document.querySelectorAll('.rule-title').forEach(title => {
+        title.onclick = () => {
+            const content = title.nextElementSibling;
+            content.classList.toggle('active');
+            content.querySelectorAll('li').forEach((li, i) => {
+                if (content.classList.contains('active')) {
+                    setTimeout(() => li.classList.add('visible'), i * 100);
+                } else {
+                    li.classList.remove('visible');
+                }
+            });
+        };
+    });
+});
+
 
 // 4. АККОРДЕОН (С авто-закрытием и улучшенной анимацией)
 document.querySelectorAll('.rule-title').forEach(title => {
