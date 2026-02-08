@@ -335,15 +335,22 @@ body::before {
     position: fixed;
     top: 0;
     left: 0;
-    width: 120px;
-    height: 120px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     pointer-events: none;
-    backdrop-filter: blur(10px) saturate(150%) brightness(1.2);
-    background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(12px) saturate(180%) brightness(1.2);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2),
+                0 0 40px rgba(102, 126, 234, 0.1);
     transform: translate(-50%, -50%);
-    transition: transform 0.05s ease-out;
+    transition: transform 0.05s ease-out, backdrop-filter 0.2s ease;
     z-index: 9999;
-    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2), 0 0 60px rgba(102, 126, 234, 0.15);
+}
+
+/* Чтобы линза преломляла карточки, сделаем их чуть прозрачными */
+.card {
+    background: rgba(255, 255, 255, 0.6); /* уменьшили непрозрачность */
+    backdrop-filter: blur(8px);
 }
