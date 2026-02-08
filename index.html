@@ -9,6 +9,12 @@
 </head>
 <body>
 
+<div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+</div>
+
 <header class="header">
     <h1>Правила конкурса FernieX – Media-X</h1>
     <p>Пожалуйста, ознакомьтесь перед участием</p>
@@ -16,15 +22,15 @@
 
 <main class="container">
 
-<section class="card">
-    <h2>Общая информация</h2>
-    <p>
-        Данное мероприятие проводится с целью комфортного и безопасного взаимодействия
-        всех участников. Соблюдение правил обязательно.
-    </p>
-</section>
+    <section class="card glass-panel">
+        <h2>Общая информация</h2>
+        <p>
+            Данное мероприятие проводится с целью комфортного и безопасного взаимодействия
+            всех участников. Соблюдение правил обязательно.
+        </p>
+    </section>
 
-<section class="card">
+<section class="card glass-panel">
     <h2>Правила конкурса FernieX – Media-X</h2>
 
 <div class="rule">
@@ -163,8 +169,17 @@
     <p>© 2026 FernieX. Все права защищены.</p>
 </footer>
 
-<!-- Линза Liquid Glass -->
-<div class="lens"></div>
+<svg style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
+    <defs>
+        <filter id="liquid-distortion">
+            <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="2" result="warp" />
+            <feDisplacementMap xChannelSelector="R" yChannelSelector="G" scale="40" in="SourceGraphic" in2="warp" />
+        </filter>
+    </defs>
+</svg>
+
+<div class="cursor-wrapper">
+    <div class="liquid-blob"></div> <div class="lens-flare"></div>  </div>
 
 </body>
 </html>
