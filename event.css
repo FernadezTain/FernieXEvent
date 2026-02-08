@@ -82,3 +82,12 @@ body {
     font-size: 0.9rem;
     color: #6b7280;
 }
+.rule-list {
+    padding-left: 20px;
+    list-style: disc;
+}
+
+.rule-list li {
+    margin-bottom: 8px;
+    color: #374151;
+}
