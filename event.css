@@ -1,4 +1,3 @@
-/* Обновленный CSS */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -9,7 +8,7 @@
 :root {
     --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-bg: rgba(255, 255, 255, 0.95);
     --glass-border: rgba(255, 255, 255, 0.2);
     --shadow-glow: 0 0 40px rgba(102, 126, 234, 0.15);
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -241,12 +240,11 @@ body::before {
     overflow: hidden;
     padding: 0 24px;
     background: rgba(255, 255, 255, 0.9);
-    transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-                padding 0.4s ease;
+    transition: max-height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .rule-content.active {
-    max-height: 500px;
+    max-height: 2000px; /* Увеличено для отображения всех пунктов */
     padding: 24px;
 }
 
@@ -261,8 +259,12 @@ body::before {
     position: relative;
     padding-left: 24px;
     opacity: 0;
-    transform: translateX(-20px);
     animation: slideInItem 0.5s forwards;
+}
+
+.rule-list li.visible {
+    opacity: 1;
+    transform: translateX(0);
 }
 
 .rule-list li::before {
@@ -306,4 +308,25 @@ body::before {
         transparent, 
         rgba(102, 126, 234, 0.5), 
         transparent);
+}
+
+/* Анимации для загрузки */
+.card, .header, .footer {
+    opacity: 0;
+    animation: fadeInUp 0.8s ease forwards;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation-delay: 0.2s;
+}
+
+.footer {
+    animation-delay: 0.4s;
 }
