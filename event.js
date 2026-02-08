@@ -15,6 +15,9 @@ const toast = document.getElementById('toast');
 const toastMessage = document.getElementById('toastMessage');
 const totalFilesEl = document.getElementById('totalFiles');
 
+// Storage key
+const STORAGE_KEY = 'event_files_data';
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     checkUserName();
@@ -58,14 +61,10 @@ function showNameModal() {
     const userNameInput = document.getElementById('userName');
     const saveNameBtn = document.getElementById('saveNameBtn');
 
-    // Save on Enter key
     userNameInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            saveName();
-        }
+        if (e.key === 'Enter') saveName();
     });
 
-    // Save on button click
     saveNameBtn.addEventListener('click', saveName);
 
     function saveName() {
@@ -77,16 +76,13 @@ function showNameModal() {
             showToast(`Привет, ${name}! 👋`, 'success');
         } else {
             userNameInput.style.borderColor = 'var(--error)';
-            setTimeout(() => {
-                userNameInput.style.borderColor = '';
-            }, 1000);
+            setTimeout(() => userNameInput.style.borderColor = '', 1000);
         }
     }
 }
 
 // Setup event listeners
 function setupEventListeners() {
-    // Click to select files
     selectBtn.addEventListener('click', () => fileInput.click());
     uploadZone.addEventListener('click', (e) => {
         if (e.target === uploadZone || e.target === uploadContent) {
@@ -94,12 +90,8 @@ function setupEventListeners() {
         }
     });
 
-    // File input change
-    fileInput.addEventListener('change', (e) => {
-        handleFiles(e.target.files);
-    });
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
-    // Drag and drop
     uploadZone.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadZone.classList.add('drag-over');
@@ -115,32 +107,25 @@ function setupEventListeners() {
         handleFiles(e.dataTransfer.files);
     });
 
-    // Paste support (Ctrl+V)
     document.addEventListener('paste', (e) => {
         const items = e.clipboardData?.items;
         if (items) {
             const files = [];
             for (let item of items) {
-                if (item.kind === 'file') {
-                    files.push(item.getAsFile());
-                }
+                if (item.kind === 'file') files.push(item.getAsFile());
             }
-            if (files.length > 0) {
-                handleFiles(files);
-            }
+            if (files.length > 0) handleFiles(files);
         }
     });
 
-    // Clear all files
     clearBtn.addEventListener('click', clearAllFiles);
 }
 
 // Handle file selection
 async function handleFiles(fileList) {
     const files = Array.from(fileList);
-    const maxSize = 20 * 1024 * 1024; // 20 MB
+    const maxSize = 20 * 1024 * 1024;
 
-    // Validate files
     const validFiles = files.filter(file => {
         if (file.size > maxSize) {
             showToast(`❌ ${file.name} превышает 20 МБ`, 'error');
@@ -151,61 +136,75 @@ async function handleFiles(fileList) {
 
     if (validFiles.length === 0) return;
 
-    // Show uploading state
     uploadingOverlay.classList.add('active');
 
     try {
-        // Upload files one by one
         for (const file of validFiles) {
-            await uploadFile(file);
+            await saveFileLocally(file);
         }
-        
         showToast(`✅ Загружено ${validFiles.length} файл(ов)`, 'success');
         loadFiles();
     } catch (error) {
         console.error('Upload error:', error);
-        showToast('❌ Ошибка при загрузке файлов', 'error');
+        showToast('❌ Ошибка: ' + error.message, 'error');
     } finally {
         uploadingOverlay.classList.remove('active');
         fileInput.value = '';
     }
 }
 
-// Upload single file to Vercel API
-async function uploadFile(file) {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('userName', currentUser);
+// Save file to localStorage
+async function saveFileLocally(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+            const fileData = {
+                id: generateId(),
+                filename: file.name,
+                size: file.size,
+                mimetype: file.type,
+                userName: currentUser,
+                uploadedAt: new Date().toISOString(),
+                data: e.target.result
+            };
 
-    const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
+            const storage = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"files":[]}');
+            storage.files.push(fileData);
+            
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(storage));
+                resolve(fileData);
+            } catch (err) {
+                if (err.name === 'QuotaExceededError') {
+                    reject(new Error('Недостаточно места. Удалите старые файлы.'));
+                } else {
+                    reject(err);
+                }
+            }
+        };
+        
+        reader.onerror = () => reject(new Error('Ошибка чтения файла'));
+        reader.readAsDataURL(file);
     });
-
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Upload failed');
-    }
-
-    return await response.json();
 }
 
-// Load all files from server
-async function loadFiles() {
+function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+function loadFiles() {
     try {
-        const response = await fetch('/api/files');
-        if (!response.ok) throw new Error('Failed to load files');
-        
-        const data = await response.json();
-        uploadedFiles = data.files || [];
+        const storage = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"files":[]}');
+        uploadedFiles = storage.files || [];
         renderFiles();
         updateStats();
     } catch (error) {
         console.error('Load files error:', error);
+        uploadedFiles = [];
     }
 }
 
-// Render files in grid
 function renderFiles() {
     if (uploadedFiles.length === 0) {
         filesSection.classList.remove('active');
@@ -214,14 +213,9 @@ function renderFiles() {
 
     filesSection.classList.add('active');
     filesGrid.innerHTML = '';
-
-    uploadedFiles.forEach(file => {
-        const card = createFileCard(file);
-        filesGrid.appendChild(card);
-    });
+    uploadedFiles.forEach(file => filesGrid.appendChild(createFileCard(file)));
 }
 
-// Create file card element
 function createFileCard(file) {
     const card = document.createElement('div');
     card.className = 'file-card';
@@ -269,31 +263,21 @@ function createFileCard(file) {
     return card;
 }
 
-// Get file icon based on extension
 function getFileIcon(filename) {
     const ext = filename.split('.').pop().toLowerCase();
     const icons = {
-        // Images
         'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🖼️', 'svg': '🖼️', 'webp': '🖼️',
-        // Documents
         'pdf': '📄', 'doc': '📝', 'docx': '📝', 'txt': '📝', 'rtf': '📝',
-        // Spreadsheets
         'xls': '📊', 'xlsx': '📊', 'csv': '📊',
-        // Presentations
         'ppt': '📊', 'pptx': '📊',
-        // Archives
         'zip': '📦', 'rar': '📦', '7z': '📦', 'tar': '📦', 'gz': '📦',
-        // Code
         'js': '💻', 'html': '💻', 'css': '💻', 'json': '💻', 'xml': '💻', 'py': '💻', 'java': '💻',
-        // Video
         'mp4': '🎥', 'avi': '🎥', 'mov': '🎥', 'wmv': '🎥', 'mkv': '🎥',
-        // Audio
         'mp3': '🎵', 'wav': '🎵', 'flac': '🎵', 'aac': '🎵',
     };
     return icons[ext] || '📁';
 }
 
-// Format file size
 function formatFileSize(bytes) {
     if (bytes === 0) return '0 B';
     const k = 1024;
@@ -302,7 +286,6 @@ function formatFileSize(bytes) {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
-// Format date
 function formatDate(dateString) {
     const date = new Date(dateString);
     const now = new Date();
@@ -319,22 +302,21 @@ function formatDate(dateString) {
     return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 }
 
-// Download file
-async function downloadFile(fileId) {
+function downloadFile(fileId) {
     try {
-        const response = await fetch(`/api/download/${fileId}`);
-        if (!response.ok) throw new Error('Download failed');
+        const storage = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"files":[]}');
+        const file = storage.files.find(f => f.id === fileId);
         
-        const blob = await response.blob();
-        const file = uploadedFiles.find(f => f.id === fileId);
-        
-        const url = window.URL.createObjectURL(blob);
+        if (!file) {
+            showToast('❌ Файл не найден', 'error');
+            return;
+        }
+
         const a = document.createElement('a');
-        a.href = url;
+        a.href = file.data;
         a.download = file.filename;
         document.body.appendChild(a);
         a.click();
-        window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
         
         showToast('✅ Файл скачан', 'success');
@@ -344,16 +326,13 @@ async function downloadFile(fileId) {
     }
 }
 
-// Delete file
-async function deleteFile(fileId) {
+function deleteFile(fileId) {
     if (!confirm('Вы уверены, что хотите удалить этот файл?')) return;
     
     try {
-        const response = await fetch(`/api/delete/${fileId}`, {
-            method: 'DELETE'
-        });
-        
-        if (!response.ok) throw new Error('Delete failed');
+        const storage = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"files":[]}');
+        storage.files = storage.files.filter(f => f.id !== fileId);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(storage));
         
         showToast('✅ Файл удален', 'success');
         loadFiles();
@@ -363,17 +342,11 @@ async function deleteFile(fileId) {
     }
 }
 
-// Clear all files
-async function clearAllFiles() {
+function clearAllFiles() {
     if (!confirm('Вы уверены, что хотите удалить ВСЕ файлы?')) return;
     
     try {
-        const response = await fetch('/api/clear', {
-            method: 'DELETE'
-        });
-        
-        if (!response.ok) throw new Error('Clear failed');
-        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ files: [] }));
         uploadedFiles = [];
         renderFiles();
         updateStats();
@@ -384,18 +357,13 @@ async function clearAllFiles() {
     }
 }
 
-// Update statistics
 function updateStats() {
     totalFilesEl.textContent = uploadedFiles.length;
 }
 
-// Show toast notification
 function showToast(message, type = 'success') {
     toastMessage.textContent = message;
     toast.className = `toast ${type}`;
     toast.classList.add('show');
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
+    setTimeout(() => toast.classList.remove('show'), 3000);
 }
