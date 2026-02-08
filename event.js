@@ -9,19 +9,19 @@ document.addEventListener('DOMContentLoaded', () => {
         openBtn.addEventListener('click', (e) => {
             e.preventDefault();
             modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Убираем скролл фона
+            document.body.style.overflow = 'hidden';
         });
     }
 
     const closeModal = () => {
         modal.classList.remove('active');
-        document.body.style.overflow = ''; // Возвращаем скролл
+        document.body.style.overflow = ''; 
     };
 
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
     
     // Закрытие по клику на область вне окна
-    window.addEventListener('click', (e) => {
+    modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
 
@@ -39,14 +39,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 3. КАСТОМНЫЙ КУРСОР (ДВИЖЕНИЕ И РЕАКЦИЯ) ---
+    // --- 3. КУРСОР ---
     const blob = document.querySelector('.liquid-blob');
     const flare = document.querySelector('.lens-flare');
 
-    if (window.innerWidth > 991) { // Только для ПК
+    if (window.innerWidth > 991 && blob) {
         window.addEventListener('mousemove', (e) => {
             const { clientX, clientY } = e;
-            // Плавное следование
             blob.animate({
                 left: `${clientX}px`,
                 top: `${clientY}px`
@@ -56,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
             flare.style.top = `${clientY}px`;
         });
 
-        // Реакция курсора на наведение на кнопки
         const interactives = document.querySelectorAll('button, a, .rule-title');
         interactives.forEach(el => {
             el.addEventListener('mouseenter', () => {
@@ -70,13 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 4. АККОРДЕОН (ПРАВИЛА) ---
+    // --- 4. АККОРДЕОН ---
     const ruleTitles = document.querySelectorAll('.rule-title');
     ruleTitles.forEach(title => {
         title.addEventListener('click', () => {
             const content = title.nextElementSibling;
             const items = content.querySelectorAll('li');
-            
             content.classList.toggle('active');
             
             if (content.classList.contains('active')) {
