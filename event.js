@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- 1. ЛОГИКА АККОРДЕОНА (Оставляем как было, работает отлично) ---
+    // --- 1. АККОРДЕОН (Работает везде, легкий код) ---
     document.querySelectorAll('.rule-title').forEach(button => {
         button.addEventListener('click', () => {
             const content = button.nextElementSibling;
@@ -20,11 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
             content.classList.toggle('active');
             
             if (!isOpen) {
-                // Анимация пунктов списка
                 const items = content.querySelectorAll('li');
                 items.forEach((item, index) => {
                     item.style.animationDelay = `${index * 0.05}s`;
-                    // Небольшая задержка перед добавлением класса
                     setTimeout(() => item.classList.add('visible'), 50);
                 });
             } else {
@@ -33,75 +31,65 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- 2. ЛОГИКА ЖИДКОГО КУРСОРА (LIQUID PHYSICS) ---
-    
-    const blob = document.querySelector('.liquid-blob');
-    const flare = document.querySelector('.lens-flare');
-    
-    // Координаты мыши (целевые)
-    let mouseX = window.innerWidth / 2;
-    let mouseY = window.innerHeight / 2;
-    
-    // Координаты элементов (текущие)
-    let blobX = mouseX;
-    let blobY = mouseY;
-    let flareX = mouseX;
-    let flareY = mouseY;
-    
-    // Слушаем движение мыши
-    document.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-    });
+    // === ПРОВЕРКА НА МОБИЛЬНОЕ УСТРОЙСТВО ===
+    // Если экран меньше 991px ИЛИ устройство имеет сенсорный экран (coarse pointer)
+    const isMobile = window.matchMedia("(max-width: 991px)").matches || 
+                     window.matchMedia("(hover: none)").matches;
 
-    // Эффект клика
-    document.addEventListener('mousedown', () => document.body.classList.add('is-pressed'));
-    document.addEventListener('mouseup', () => document.body.classList.remove('is-pressed'));
-
-    // Функция линейной интерполяции (для плавности)
-    const lerp = (start, end, factor) => start + (end - start) * factor;
-
-    function animateCursor() {
-        // Жидкость движется медленно (вязкость)
-        // 0.08 = скорость (меньше = медленнее)
-        blobX = lerp(blobX, mouseX, 0.08);
-        blobY = lerp(blobY, mouseY, 0.08);
+    // --- 2. ТЯЖЕЛАЯ АНИМАЦИЯ (ТОЛЬКО ДЛЯ ПК) ---
+    if (!isMobile) {
         
-        // Блик движется быстрее (свет)
-        flareX = lerp(flareX, mouseX, 0.2);
-        flareY = lerp(flareY, mouseY, 0.2);
+        // --- LIQUID CURSOR LOGIC ---
+        const blob = document.querySelector('.liquid-blob');
+        const flare = document.querySelector('.lens-flare');
         
-        // Применяем координаты
-        if (blob) {
-            blob.style.transform = `translate(${blobX}px, ${blobY}px) translate(-50%, -50%)`;
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let blobX = mouseX, blobY = mouseY;
+        let flareX = mouseX, flareY = mouseY;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // 3D Наклон карточек (Parallax)
+            // Вычисляем только если мышь двигается, чтобы не грузить CPU в простое
+            requestAnimationFrame(() => {
+                const xForce = (window.innerWidth / 2 - e.clientX) / 60; // Меньше чувствительность
+                const yForce = (window.innerHeight / 2 - e.clientY) / 60;
+                
+                document.querySelectorAll('.card').forEach(card => {
+                    // Проверка, находится ли мышь над карточкой (оптимизация)
+                    const rect = card.getBoundingClientRect();
+                    if (mouseX > rect.left && mouseX < rect.right && 
+                        mouseY > rect.top && mouseY < rect.bottom) {
+                        card.style.transform = `perspective(1000px) rotateY(${xForce}deg) rotateX(${-yForce}deg)`;
+                    } else {
+                        card.style.transform = 'perspective(1000px) rotateY(0) rotateX(0)';
+                    }
+                });
+            });
+        });
+
+        document.addEventListener('mousedown', () => document.body.classList.add('is-pressed'));
+        document.addEventListener('mouseup', () => document.body.classList.remove('is-pressed'));
+
+        // Функция линейной интерполяции
+        const lerp = (start, end, factor) => start + (end - start) * factor;
+
+        // Главный цикл анимации курсора
+        function animateCursor() {
+            blobX = lerp(blobX, mouseX, 0.08);
+            blobY = lerp(blobY, mouseY, 0.08);
+            flareX = lerp(flareX, mouseX, 0.2);
+            flareY = lerp(flareY, mouseY, 0.2);
+            
+            if (blob) blob.style.transform = `translate(${blobX}px, ${blobY}px) translate(-50%, -50%)`;
+            if (flare) flare.style.transform = `translate(${flareX}px, ${flareY}px) translate(-50%, -50%)`;
+            
+            requestAnimationFrame(animateCursor);
         }
-        if (flare) {
-            flare.style.transform = `translate(${flareX}px, ${flareY}px) translate(-50%, -50%)`;
-        }
         
-        requestAnimationFrame(animateCursor);
+        animateCursor();
     }
-    
-    animateCursor();
-
-    // --- 3. ПАРАЛЛАКС КАРТОЧЕК (3D ЭФФЕКТ) ---
-    // Легкий наклон карточек при движении мыши для усиления эффекта стекла
-    const cards = document.querySelectorAll('.card');
-    
-    document.addEventListener('mousemove', (e) => {
-        const x = (window.innerWidth / 2 - e.clientX) / 50;
-        const y = (window.innerHeight / 2 - e.clientY) / 50;
-
-        cards.forEach(card => {
-            // Сдвигаем карточку чуть-чуть
-            card.style.transform = `perspective(1000px) rotateY(${x * 0.5}deg) rotateX(${-y * 0.5}deg)`;
-        });
-    });
-    
-    // Сброс позиции при уходе мыши
-    document.addEventListener('mouseleave', () => {
-        cards.forEach(card => {
-            card.style.transform = 'perspective(1000px) rotateY(0) rotateX(0)';
-        });
-    });
 });
