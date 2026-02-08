@@ -249,3 +249,53 @@ body.is-pressed .liquid-blob {
     height: 130px;
     background: radial-gradient(circle, rgba(99, 102, 241, 0.6) 0%, rgba(255, 255, 255, 0) 70%);
 }
+/* === МОБИЛЬНАЯ ОПТИМИЗАЦИЯ === */
+@media (max-width: 991px), (hover: none) {
+    
+    /* 1. Возвращаем стандартный курсор */
+    * {
+        cursor: auto !important;
+    }
+
+    /* 2. Скрываем тяжелые элементы курсора */
+    .cursor-wrapper, 
+    .liquid-blob, 
+    .lens-flare,
+    svg[aria-hidden="true"] {
+        display: none !important;
+    }
+
+    /* 3. Отключаем 3D вращение и ховеры карточек */
+    .card {
+        transform: none !important; /* Убираем наклон */
+        transition: transform 0.2s ease, box-shadow 0.2s ease; /* Упрощаем анимацию */
+    }
+    
+    .card:hover {
+        transform: none !important;
+        /* Убираем сложное смещение фона */
+    }
+
+    /* 4. Оптимизация производительности стекла */
+    .card, .rule-content, .header, .footer {
+        /* Уменьшаем блюр для производительности */
+        backdrop-filter: blur(10px) saturate(150%);
+        -webkit-backdrop-filter: blur(10px) saturate(150%);
+    }
+
+    /* 5. Упрощаем фон (меньше нагрузки на GPU) */
+    .bg-blobs {
+        opacity: 0.3; /* Тусклее */
+    }
+    
+    .blob {
+        animation-duration: 40s; /* Медленнее анимация = меньше перерисовок */
+        filter: blur(40px); /* Меньше радиус блюра */
+    }
+
+    /* Увеличиваем кликабельные зоны для пальцев */
+    .rule-title {
+        padding: 24px; 
+        font-size: 1.15rem;
+    }
+}
