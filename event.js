@@ -1,12 +1,24 @@
+// GitHub Configuration - ВАЖНО: ЗАМЕНИТЕ НА СВОИ ДАННЫЕ!
+const GITHUB_CONFIG = {
+    owner: 'YOUR_GITHUB_USERNAME',        // Ваш GitHub username
+    repo: 'YOUR_REPO_NAME',               // Название репозитория
+    branch: 'main',                       // Или 'master'
+};
+
 // Global state
 let uploadedFiles = [];
 let currentUser = localStorage.getItem('userName') || '';
+let isAdmin = !!localStorage.getItem('githubToken');
+let githubToken = localStorage.getItem('githubToken') || '';
 
-// DOM Elements
+// Paths
+const FILES_JSON_PATH = 'eventfiles/files.json';
+const UPLOADS_PATH = 'eventfiles/uploads/';
+
+// DOM Elements  
 const uploadZone = document.getElementById('uploadZone');
 const fileInput = document.getElementById('fileInput');
 const selectBtn = document.getElementById('selectBtn');
-const uploadContent = document.getElementById('uploadContent');
 const uploadingOverlay = document.getElementById('uploadingOverlay');
 const filesSection = document.getElementById('filesSection');
 const filesGrid = document.getElementById('filesGrid');
@@ -15,24 +27,104 @@ const toast = document.getElementById('toast');
 const toastMessage = document.getElementById('toastMessage');
 const totalFilesEl = document.getElementById('totalFiles');
 
-// Storage key
-const STORAGE_KEY = 'event_files_data';
-
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     checkUserName();
     loadFiles();
     setupEventListeners();
+    addAdminButton();
 });
 
-// Check if user has entered their name
-function checkUserName() {
-    if (!currentUser) {
-        showNameModal();
+function addAdminButton() {
+    const stats = document.querySelector('.stats');
+    const btn = document.createElement('div');
+    btn.className = 'stat-item';
+    btn.innerHTML = `<button class="btn-secondary" onclick="${isAdmin ? 'showAdminPanel' : 'showAdminLogin'}()" style="cursor: pointer;">${isAdmin ? '🔓 Админ' : '🔒 Войти'}</button>`;
+    stats.appendChild(btn);
+}
+
+function showAdminLogin() {
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔐 Вход администратора</h2>
+                <p>Введите GitHub Personal Access Token</p>
+            </div>
+            <div class="form-group">
+                <label>GitHub Token</label>
+                <input type="password" id="tokenInput" placeholder="ghp_...">
+                <small style="color: var(--text-secondary); display: block; margin-top: 8px;">
+                    Создайте на <a href="https://github.com/settings/tokens/new" target="_blank" style="color: var(--primary);">github.com/settings/tokens</a><br>
+                    Права: <strong>repo</strong> (полный доступ к репозиториям)
+                </small>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="this.closest('.modal').remove()">Отмена</button>
+                <button class="btn-primary" onclick="loginAdmin()">Войти</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+async function loginAdmin() {
+    const token = document.getElementById('tokenInput').value.trim();
+    if (!token) return showToast('❌ Введите токен', 'error');
+
+    try {
+        const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}`, {
+            headers: { 'Authorization': `token ${token}` }
+        });
+
+        if (res.ok) {
+            localStorage.setItem('githubToken', token);
+            githubToken = token;
+            isAdmin = true;
+            document.querySelector('.modal').remove();
+            showToast('✅ Вход выполнен!', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast('❌ Неверный токен', 'error');
+        }
+    } catch (e) {
+        showToast('❌ Ошибка подключения', 'error');
     }
 }
 
-// Show name input modal
+function showAdminPanel() {
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>👑 Панель администратора</h2>
+            </div>
+            <p style="color: var(--text-secondary); margin: 20px 0;">
+                📁 Репозиторий: <strong style="color: var(--primary);">${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}</strong><br>
+                📊 Файлов: <strong style="color: var(--success);">${uploadedFiles.length}</strong>
+            </p>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="logoutAdmin()">🚪 Выйти</button>
+                <button class="btn-primary" onclick="this.closest('.modal').remove()">Закрыть</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function logoutAdmin() {
+    if (confirm('Выйти из режима администратора?')) {
+        localStorage.removeItem('githubToken');
+        location.reload();
+    }
+}
+
+function checkUserName() {
+    if (!currentUser) showNameModal();
+}
+
 function showNameModal() {
     const modal = document.createElement('div');
     modal.className = 'modal active';
@@ -40,330 +132,361 @@ function showNameModal() {
         <div class="modal-content">
             <div class="modal-header">
                 <h2>👋 Добро пожаловать!</h2>
-                <p>Пожалуйста, введите ваше имя для идентификации файлов</p>
+                <p>Введите ваше имя для идентификации файлов</p>
             </div>
             <div class="form-group">
-                <label for="userName">Ваше имя</label>
-                <input type="text" id="userName" placeholder="Введите ваше имя" autofocus>
+                <label>Ваше имя</label>
+                <input type="text" id="nameInput" placeholder="Иван Петров" autofocus>
             </div>
             <div class="modal-actions">
-                <button class="btn-primary" id="saveNameBtn">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16 5L7.5 13.5L4 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    Сохранить
-                </button>
+                <button class="btn-primary" onclick="saveName()">Сохранить</button>
             </div>
         </div>
     `;
     document.body.appendChild(modal);
+}
 
-    const userNameInput = document.getElementById('userName');
-    const saveNameBtn = document.getElementById('saveNameBtn');
-
-    userNameInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') saveName();
-    });
-
-    saveNameBtn.addEventListener('click', saveName);
-
-    function saveName() {
-        const name = userNameInput.value.trim();
-        if (name) {
-            currentUser = name;
-            localStorage.setItem('userName', name);
-            modal.remove();
-            showToast(`Привет, ${name}! 👋`, 'success');
-        } else {
-            userNameInput.style.borderColor = 'var(--error)';
-            setTimeout(() => userNameInput.style.borderColor = '', 1000);
-        }
+function saveName() {
+    const name = document.getElementById('nameInput').value.trim();
+    if (name) {
+        localStorage.setItem('userName', name);
+        currentUser = name;
+        document.querySelector('.modal').remove();
+        showToast(`Привет, ${name}! 👋`, 'success');
     }
 }
 
-// Setup event listeners
 function setupEventListeners() {
-    selectBtn.addEventListener('click', () => fileInput.click());
-    uploadZone.addEventListener('click', (e) => {
-        if (e.target === uploadZone || e.target === uploadContent) {
-            fileInput.click();
-        }
-    });
-
-    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
-
-    uploadZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadZone.classList.add('drag-over');
-    });
-
-    uploadZone.addEventListener('dragleave', () => {
-        uploadZone.classList.remove('drag-over');
-    });
-
-    uploadZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadZone.classList.remove('drag-over');
-        handleFiles(e.dataTransfer.files);
-    });
-
-    document.addEventListener('paste', (e) => {
-        const items = e.clipboardData?.items;
-        if (items) {
-            const files = [];
-            for (let item of items) {
-                if (item.kind === 'file') files.push(item.getAsFile());
-            }
-            if (files.length > 0) handleFiles(files);
-        }
-    });
-
-    clearBtn.addEventListener('click', clearAllFiles);
+    selectBtn.onclick = () => fileInput.click();
+    fileInput.onchange = (e) => handleFiles(e.target.files);
+    
+    uploadZone.ondragover = (e) => { e.preventDefault(); uploadZone.classList.add('drag-over'); };
+    uploadZone.ondragleave = () => uploadZone.classList.remove('drag-over');
+    uploadZone.ondrop = (e) => { e.preventDefault(); uploadZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); };
+    
+    document.onpaste = (e) => {
+        const files = Array.from(e.clipboardData?.items || [])
+            .filter(i => i.kind === 'file')
+            .map(i => i.getAsFile());
+        if (files.length) handleFiles(files);
+    };
+    
+    clearBtn.onclick = clearAllFiles;
 }
 
-// Handle file selection
 async function handleFiles(fileList) {
-    const files = Array.from(fileList);
-    const maxSize = 20 * 1024 * 1024;
-
-    const validFiles = files.filter(file => {
-        if (file.size > maxSize) {
-            showToast(`❌ ${file.name} превышает 20 МБ`, 'error');
+    const files = Array.from(fileList).filter(f => {
+        if (f.size > 20 * 1024 * 1024) {
+            showToast(`❌ ${f.name} > 20 МБ`, 'error');
             return false;
         }
         return true;
     });
 
-    if (validFiles.length === 0) return;
+    if (!files.length) return;
 
     uploadingOverlay.classList.add('active');
 
     try {
-        for (const file of validFiles) {
-            await saveFileLocally(file);
+        for (const file of files) {
+            isAdmin ? await uploadToGitHub(file) : await saveLocally(file);
         }
-        showToast(`✅ Загружено ${validFiles.length} файл(ов)`, 'success');
-        loadFiles();
-    } catch (error) {
-        console.error('Upload error:', error);
-        showToast('❌ Ошибка: ' + error.message, 'error');
+        showToast(`✅ Загружено ${files.length} файл(ов)`, 'success');
+        await loadFiles();
+    } catch (e) {
+        showToast('❌ ' + e.message, 'error');
     } finally {
         uploadingOverlay.classList.remove('active');
         fileInput.value = '';
     }
 }
 
-// Save file to localStorage
-async function saveFileLocally(file) {
+async function uploadToGitHub(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        
+        reader.onload = async (e) => {
+            try {
+                const base64 = e.target.result.split(',')[1];
+                const fileName = `${Date.now()}-${file.name}`;
+                const path = UPLOADS_PATH + fileName;
+
+                // Upload file
+                const uploadRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${githubToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Upload: ${file.name} by ${currentUser}`,
+                        content: base64,
+                        branch: GITHUB_CONFIG.branch
+                    })
+                });
+
+                if (!uploadRes.ok) throw new Error('GitHub upload failed');
+                const data = await uploadRes.json();
+
+                // Update files.json
+                await updateFilesJSON({
+                    id: Date.now().toString(36) + Math.random().toString(36).substr(2),
+                    filename: file.name,
+                    size: file.size,
+                    mimetype: file.type,
+                    userName: currentUser,
+                    uploadedAt: new Date().toISOString(),
+                    githubPath: path,
+                    downloadUrl: data.content.download_url
+                });
+
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        };
+        reader.onerror = () => reject(new Error('File read error'));
+        reader.readAsDataURL(file);
+    });
+}
+
+async function updateFilesJSON(newFile) {
+    let sha = null;
+    let files = [];
+
+    // Get current files.json
+    try {
+        const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${FILES_JSON_PATH}`, {
+            headers: { 'Authorization': `token ${githubToken}` }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            sha = data.sha;
+            files = JSON.parse(atob(data.content)).files || [];
+        }
+    } catch (e) {}
+
+    files.push(newFile);
+
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify({ files }, null, 2))));
+
+    const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${FILES_JSON_PATH}`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `token ${githubToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            message: `Add ${newFile.filename}`,
+            content,
+            branch: GITHUB_CONFIG.branch,
+            ...(sha && { sha })
+        })
+    });
+
+    if (!res.ok) throw new Error('Failed to update files.json');
+}
+
+async function saveLocally(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
         reader.onload = (e) => {
-            const fileData = {
-                id: generateId(),
+            const data = {
+                id: Date.now().toString(36) + Math.random().toString(36).substr(2),
                 filename: file.name,
                 size: file.size,
                 mimetype: file.type,
                 userName: currentUser,
                 uploadedAt: new Date().toISOString(),
-                data: e.target.result
+                data: e.target.result,
+                local: true
             };
 
-            const storage = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"files":[]}');
-            storage.files.push(fileData);
-            
+            const storage = JSON.parse(localStorage.getItem('local_files') || '{"files":[]}');
+            storage.files.push(data);
+
             try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(storage));
-                resolve(fileData);
+                localStorage.setItem('local_files', JSON.stringify(storage));
+                resolve();
             } catch (err) {
-                if (err.name === 'QuotaExceededError') {
-                    reject(new Error('Недостаточно места. Удалите старые файлы.'));
-                } else {
-                    reject(err);
-                }
+                reject(new Error('Недостаточно места. Войдите как админ.'));
             }
         };
-        
-        reader.onerror = () => reject(new Error('Ошибка чтения файла'));
+        reader.onerror = () => reject(new Error('File read error'));
         reader.readAsDataURL(file);
     });
 }
 
-function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
+async function loadFiles() {
+    let github = [], local = [];
 
-function loadFiles() {
+    // Load from GitHub (public)
     try {
-        const storage = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"files":[]}');
-        uploadedFiles = storage.files || [];
-        renderFiles();
-        updateStats();
-    } catch (error) {
-        console.error('Load files error:', error);
-        uploadedFiles = [];
-    }
+        const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${FILES_JSON_PATH}`);
+        if (res.ok) {
+            const data = await res.json();
+            github = JSON.parse(atob(data.content)).files || [];
+        }
+    } catch (e) {}
+
+    // Load from localStorage
+    const storage = JSON.parse(localStorage.getItem('local_files') || '{"files":[]}');
+    local = storage.files || [];
+
+    uploadedFiles = [...github, ...local];
+    renderFiles();
+    updateStats();
 }
 
 function renderFiles() {
-    if (uploadedFiles.length === 0) {
-        filesSection.classList.remove('active');
-        return;
-    }
-
-    filesSection.classList.add('active');
+    filesSection.style.display = uploadedFiles.length ? 'block' : 'none';
     filesGrid.innerHTML = '';
-    uploadedFiles.forEach(file => filesGrid.appendChild(createFileCard(file)));
+    uploadedFiles.forEach(f => filesGrid.appendChild(createCard(f)));
 }
 
-function createFileCard(file) {
+function createCard(f) {
     const card = document.createElement('div');
     card.className = 'file-card';
-    
-    const icon = getFileIcon(file.filename);
-    const size = formatFileSize(file.size);
-    const date = formatDate(file.uploadedAt);
-    
+    const icon = getIcon(f.filename);
+    const size = formatSize(f.size);
+    const date = formatDate(f.uploadedAt);
+    const source = f.local ? '💾 Локально' : '☁️ GitHub';
+
     card.innerHTML = `
         <div class="file-icon">${icon}</div>
-        <div class="file-owner">👤 ${file.userName}</div>
+        <div class="file-owner">👤 ${f.userName} <span style="margin-left:10px;font-size:12px;opacity:0.7">${source}</span></div>
         <div class="file-info">
-            <div class="file-name" title="${file.filename}">${file.filename}</div>
+            <div class="file-name" title="${f.filename}">${f.filename}</div>
             <div class="file-meta">
-                <span class="file-size">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8 2H3C2.5 2 2 2.5 2 3V11C2 11.5 2.5 12 3 12H11C11.5 12 12 11.5 12 11V6L8 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M8 2V6H12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    ${size}
-                </span>
-                <span class="file-date">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/>
-                        <path d="M7 4V7L9 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                    </svg>
-                    ${date}
-                </span>
+                <span class="file-size">📄 ${size}</span>
+                <span class="file-date">🕒 ${date}</span>
             </div>
         </div>
         <div class="file-actions">
-            <button class="btn-icon download" onclick="downloadFile('${file.id}')" title="Скачать">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 3V12M9 12L6 9M9 12L12 9M3 15H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-            <button class="btn-icon delete" onclick="deleteFile('${file.id}')" title="Удалить">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 5H14M6 5V3H12V5M13 5V15H5V5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-            </button>
+            <button class="btn-icon download" onclick="downloadFile('${f.id}',${!!f.local})">⬇️</button>
+            ${isAdmin ? `<button class="btn-icon delete" onclick="deleteFile('${f.id}',${!!f.local})">🗑️</button>` : ''}
         </div>
     `;
-    
     return card;
 }
 
-function getFileIcon(filename) {
-    const ext = filename.split('.').pop().toLowerCase();
+function getIcon(name) {
+    const ext = name.split('.').pop().toLowerCase();
     const icons = {
-        'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🖼️', 'svg': '🖼️', 'webp': '🖼️',
-        'pdf': '📄', 'doc': '📝', 'docx': '📝', 'txt': '📝', 'rtf': '📝',
-        'xls': '📊', 'xlsx': '📊', 'csv': '📊',
-        'ppt': '📊', 'pptx': '📊',
-        'zip': '📦', 'rar': '📦', '7z': '📦', 'tar': '📦', 'gz': '📦',
-        'js': '💻', 'html': '💻', 'css': '💻', 'json': '💻', 'xml': '💻', 'py': '💻', 'java': '💻',
-        'mp4': '🎥', 'avi': '🎥', 'mov': '🎥', 'wmv': '🎥', 'mkv': '🎥',
-        'mp3': '🎵', 'wav': '🎵', 'flac': '🎵', 'aac': '🎵',
+        jpg: '🖼️', jpeg: '🖼️', png: '🖼️', gif: '🖼️', svg: '🖼️',
+        pdf: '📄', doc: '📝', docx: '📝', txt: '📝',
+        xls: '📊', xlsx: '📊', csv: '📊',
+        zip: '📦', rar: '📦', '7z': '📦',
+        mp4: '🎥', mp3: '🎵', js: '💻', html: '💻', css: '💻'
     };
     return icons[ext] || '📁';
 }
 
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
+function formatSize(bytes) {
+    if (!bytes) return '0 B';
+    const k = 1024, sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    return (bytes / Math.pow(k, i)).toFixed(1) + ' ' + sizes[i];
 }
 
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = now - date;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 1) return 'только что';
-    if (minutes < 60) return `${minutes} мин назад`;
-    if (hours < 24) return `${hours} ч назад`;
+function formatDate(str) {
+    const d = new Date(str), now = new Date(), diff = now - d;
+    const mins = Math.floor(diff / 60000), hrs = Math.floor(diff / 3600000), days = Math.floor(diff / 86400000);
+    if (mins < 1) return 'только что';
+    if (mins < 60) return `${mins} мин назад`;
+    if (hrs < 24) return `${hrs} ч назад`;
     if (days < 7) return `${days} дн назад`;
-    
-    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
 }
 
-function downloadFile(fileId) {
-    try {
-        const storage = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"files":[]}');
-        const file = storage.files.find(f => f.id === fileId);
-        
-        if (!file) {
-            showToast('❌ Файл не найден', 'error');
-            return;
-        }
+async function downloadFile(id, isLocal) {
+    const f = uploadedFiles.find(x => x.id === id);
+    if (!f) return showToast('❌ Не найдено', 'error');
 
+    if (isLocal) {
         const a = document.createElement('a');
-        a.href = file.data;
-        a.download = file.filename;
-        document.body.appendChild(a);
+        a.href = f.data;
+        a.download = f.filename;
         a.click();
-        document.body.removeChild(a);
-        
-        showToast('✅ Файл скачан', 'success');
-    } catch (error) {
-        console.error('Download error:', error);
-        showToast('❌ Ошибка при скачивании', 'error');
+    } else {
+        window.open(f.downloadUrl, '_blank');
+    }
+    showToast('✅ Скачано', 'success');
+}
+
+async function deleteFile(id, isLocal) {
+    if (!confirm('Удалить файл?')) return;
+
+    try {
+        if (isLocal) {
+            const storage = JSON.parse(localStorage.getItem('local_files') || '{"files":[]}');
+            storage.files = storage.files.filter(f => f.id !== id);
+            localStorage.setItem('local_files', JSON.stringify(storage));
+        } else {
+            const f = uploadedFiles.find(x => x.id === id);
+            
+            // Get files.json
+            const res = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${FILES_JSON_PATH}`, {
+                headers: { 'Authorization': `token ${githubToken}` }
+            });
+            const data = await res.json();
+            const files = JSON.parse(atob(data.content)).files.filter(x => x.id !== id);
+
+            // Update files.json
+            await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${FILES_JSON_PATH}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${githubToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: `Delete ${f.filename}`,
+                    content: btoa(unescape(encodeURIComponent(JSON.stringify({ files }, null, 2)))),
+                    branch: GITHUB_CONFIG.branch,
+                    sha: data.sha
+                })
+            });
+
+            // Delete file
+            if (f.githubPath) {
+                const fileRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${f.githubPath}`, {
+                    headers: { 'Authorization': `token ${githubToken}` }
+                });
+                const fileData = await fileRes.json();
+                await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${f.githubPath}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `token ${githubToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Delete ${f.filename}`,
+                        branch: GITHUB_CONFIG.branch,
+                        sha: fileData.sha
+                    })
+                });
+            }
+        }
+        showToast('✅ Удалено', 'success');
+        await loadFiles();
+    } catch (e) {
+        showToast('❌ Ошибка удаления', 'error');
     }
 }
 
-function deleteFile(fileId) {
-    if (!confirm('Вы уверены, что хотите удалить этот файл?')) return;
+async function clearAllFiles() {
+    if (!isAdmin || !confirm('Удалить ВСЕ файлы?')) return;
     
-    try {
-        const storage = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"files":[]}');
-        storage.files = storage.files.filter(f => f.id !== fileId);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(storage));
-        
-        showToast('✅ Файл удален', 'success');
-        loadFiles();
-    } catch (error) {
-        console.error('Delete error:', error);
-        showToast('❌ Ошибка при удалении', 'error');
-    }
-}
-
-function clearAllFiles() {
-    if (!confirm('Вы уверены, что хотите удалить ВСЕ файлы?')) return;
-    
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ files: [] }));
-        uploadedFiles = [];
-        renderFiles();
-        updateStats();
-        showToast('✅ Все файлы удалены', 'success');
-    } catch (error) {
-        console.error('Clear error:', error);
-        showToast('❌ Ошибка при очистке', 'error');
-    }
+    localStorage.setItem('local_files', '{"files":[]}');
+    showToast('✅ Очищено', 'success');
+    await loadFiles();
 }
 
 function updateStats() {
     totalFilesEl.textContent = uploadedFiles.length;
 }
 
-function showToast(message, type = 'success') {
-    toastMessage.textContent = message;
-    toast.className = `toast ${type}`;
-    toast.classList.add('show');
+function showToast(msg, type = 'success') {
+    toastMessage.textContent = msg;
+    toast.className = `toast ${type} show`;
     setTimeout(() => toast.classList.remove('show'), 3000);
 }
