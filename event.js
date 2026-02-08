@@ -113,3 +113,24 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         }
     });
 });
+// Liquid Glass Cursor
+const lens = document.createElement('div');
+lens.classList.add('lens');
+document.body.appendChild(lens);
+
+document.addEventListener('mousemove', e => {
+    lens.style.left = e.clientX + 'px';
+    lens.style.top = e.clientY + 'px';
+});
+
+// Optional: добавить эффект масштабирования при наведении на карточку
+document.querySelectorAll('.card, .rule').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+        lens.style.transform = 'translate(-50%, -50%) scale(1.3)';
+        lens.style.backdropFilter = 'blur(15px) saturate(160%) brightness(1.3)';
+    });
+    el.addEventListener('mouseleave', () => {
+        lens.style.transform = 'translate(-50%, -50%) scale(1)';
+        lens.style.backdropFilter = 'blur(10px) saturate(150%) brightness(1.2)';
+    });
+});
