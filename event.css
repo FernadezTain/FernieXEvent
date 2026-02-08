@@ -127,6 +127,49 @@ body {
     box-shadow: 0 0 15px white; mix-blend-mode: overlay;
 }
 
+Отлично! Добавим красивую, плавную анимацию появления элементов при загрузке страницы. Этот эффект будет работать только на ПК, чтобы не тормозить телефоны.
+
+Что мы сделаем:
+Начальное скрытие: Все основные блоки (header, .card, footer) будут изначально скрыты (opacity: 0).
+
+Плавное появление: При загрузке страницы, эти блоки будут плавно "вылетать" снизу вверх и проявляться.
+
+Задержка: Каждый следующий блок будет появляться с небольшой задержкой, создавая эффект последовательного раскрытия контента.
+
+Оптимизация: На мобильных устройствах эта анимация будет отключена, и элементы будут видны сразу, чтобы обеспечить максимальную производительность.
+
+1. event.css (Финальная версия с анимацией загрузки)
+Добавьте эти стили в ваш event.css файл. Я поместил их в конец, чтобы они легко переопределялись для мобильных.
+
+CSS
+
+/* --- АНИМАЦИЯ ПОЯВЛЕНИЯ ПРИ ЗАГРУЗКЕ (ТОЛЬКО НА ПК) --- */
+.header, .card, .footer {
+    opacity: 0; /* Изначально скрыты */
+    transform: translateY(20px); /* Смещены немного вниз */
+    animation: fadeInUp 0.8s ease-out forwards; /* Анимация появления */
+}
+
+/* Задержки для последовательного появления */
+.header { animation-delay: 0.1s; }
+.card:nth-of-type(1) { animation-delay: 0.2s; }
+.card:nth-of-type(2) { animation-delay: 0.3s; } /* Если карточек больше, продолжайте n-th-of-type */
+.card:nth-of-type(3) { animation-delay: 0.4s; }
+.card:nth-of-type(4) { animation-delay: 0.5s; }
+.card:nth-of-type(5) { animation-delay: 0.6s; }
+.card:nth-of-type(6) { animation-delay: 0.7s; }
+.card:nth-of-type(7) { animation-delay: 0.8s; }
+.card:nth-of-type(8) { animation-delay: 0.9s; } /* Можете добавить больше, если есть */
+.footer { animation-delay: 1.0s; }
+
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* === ОПТИМИЗАЦИЯ ПОД ТЕЛЕФОНЫ === */
 @media (max-width: 991px) {
     .cursor-wrapper, svg { display: none !important; } /* Полностью удаляем тяжелые фильтры */
@@ -144,5 +187,13 @@ body {
     .rule-list li {
         opacity: 1;
         transform: none;
+    }
+}
+
+.header, .card, .footer {
+        opacity: 1 !important; /* Сразу видимы */
+        transform: none !important;
+        animation: none !important;
+        transition: none !important;
     }
 }
