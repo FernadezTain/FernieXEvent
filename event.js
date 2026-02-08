@@ -85,31 +85,46 @@ interactiveElements.forEach(el => {
     });
 });
 // Логика модального окна
-const modal = document.getElementById('modalOverlay');
-const openBtn = document.getElementById('openModal');
-const closeBtn = document.getElementById('closeModal');
-const copyBtn = document.getElementById('copyBtn');
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('modalOverlay');
+    const openBtn = document.getElementById('openModal');
+    const closeBtn = document.getElementById('closeModal');
+    const copyBtn = document.getElementById('copyBtn');
 
-// Открыть
-openBtn.addEventListener('click', () => {
-    modal.classList.add('active');
-});
+    // Открыть (обязательно проверяем, существует ли кнопка)
+    if (openBtn) {
+        openBtn.onclick = (e) => {
+            e.preventDefault(); // Чтобы не срабатывал переход по ссылке сразу
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Запрещаем скролл сайта под модалкой
+        };
+    }
 
-// Закрыть
-closeBtn.addEventListener('click', () => {
-    modal.classList.remove('active');
-});
+    // Закрыть
+    if (closeBtn) {
+        closeBtn.onclick = () => {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto'; // Возвращаем скролл
+        };
+    }
 
-// Закрыть при клике на фон
-modal.addEventListener('click', (e) => {
-    if (e.target === modal) modal.classList.remove('active');
-});
-
-// Копирование
-copyBtn.addEventListener('click', () => {
-    const text = document.getElementById('templateText').innerText;
-    navigator.clipboard.writeText(text).then(() => {
-        copyBtn.innerText = 'Скопировано!';
-        setTimeout(() => copyBtn.innerText = 'Скопировать', 2000);
-    });
+    // Копирование
+    if (copyBtn) {
+        copyBtn.onclick = () => {
+            const text = document.getElementById('templateText').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = copyBtn.innerText;
+                copyBtn.innerText = '✅ Скопировано!';
+                setTimeout(() => copyBtn.innerText = originalText, 2000);
+            });
+        };
+    }
+    
+    // Закрытие по клику на серый фон вокруг окна
+    window.onclick = (event) => {
+        if (event.target == modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    };
 });
