@@ -109,47 +109,60 @@ body {
 .btn-label { font-weight: 700; font-size: 1.15rem; color: #1f2933; display: block; }
 .btn-desc { font-size: 0.85rem; color: #6b7280; margin-top: 2px; }
 
-/* 7. МОДАЛЬНОЕ ОКНО (ПОЛНЫЙ ФИКС) */
+/* 7. МОДАЛЬНОЕ ОКНО (ФИНАЛЬНЫЙ ФИКС ЦЕНТРИРОВАНИЯ) */
 .modal-overlay {
-    position: fixed; /* Относительно ОКНА браузера, а не кнопок */
-    top: 0;
-    left: 0;
-    width: 100vw; /* Вся ширина экрана */
-    height: 100vh; /* Вся высота экрана */
-    background: rgba(0, 0, 0, 0.5); /* Затемнение */
-    display: none; /* Изначально полностью убрано */
-    justify-content: center; /* Центр по горизонтали */
-    align-items: center; /* Центр по вертикали */
-    z-index: 999999; /* Максимальный приоритет, выше курсора и кнопок */
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    opacity: 0;
-    transition: opacity 0.4s ease;
+    position: fixed;
+    /* inset заменяет top:0, left:0, right:0, bottom:0 */
+    inset: 0; 
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+    display: none; /* Переключаем через JS */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000001; /* Выше всего, даже выше твоего курсора */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
 }
 
-/* Когда активно */
+/* Класс для активации */
 .modal-overlay.active {
-    display: flex; /* Показываем */
-    opacity: 1;
+    display: flex !important;
 }
 
 .modal-glass {
-    background: white; /* Для теста поставь белый, потом вернешь rgba */
+    position: relative;
     background: rgba(255, 255, 255, 0.95);
     padding: 40px;
     border-radius: 30px;
     width: 90%;
-    max-width: 500px;
-    position: relative; /* Чтобы внутренности окна не улетали */
-    box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    max-width: 480px;
+    /* Убираем все внешние отступы, которые могли его двигать */
+    margin: 0; 
+    box-shadow: 0 30px 70px rgba(0,0,0,0.3);
+    border: 1px solid #fff;
     
-    /* Анимация появления */
-    transform: scale(0.8) translateY(20px);
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Анимация */
+    animation: modalAppear 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
-.modal-overlay.active .modal-glass {
-    transform: scale(1) translateY(0);
+@keyframes modalAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Кнопки внутри окна */
+.modal-footer {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+    justify-content: flex-end;
 }
 .copy-box { background: #f8fafc; padding: 20px; border-radius: 18px; margin: 24px 0; position: relative; border: 1px solid #e2e8f0; }
 .copy-box pre { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: #334155; white-space: pre-wrap; }
