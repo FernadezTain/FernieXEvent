@@ -4,6 +4,7 @@
     margin: 0;
     padding: 0;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    cursor: none; /* Скрываем стандартный курсор ВЕЗДЕ на ПК */
 }
 
 :root {
@@ -57,10 +58,7 @@ body {
 .footer { animation-delay: 0.5s; }
 
 @keyframes fadeInUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* 4. КОНТЕНТ И КАРТОЧКИ */
@@ -90,7 +88,6 @@ body {
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.3);
     border: 1px solid rgba(255,255,255,0.2);
-    transition: background 0.3s ease;
 }
 
 .rule-title {
@@ -98,7 +95,6 @@ body {
     border: none; background: transparent;
     text-align: left; font-weight: 600;
     display: flex; justify-content: space-between; align-items: center;
-    cursor: pointer;
 }
 
 .rule-content {
@@ -107,7 +103,6 @@ body {
     transition: max-height 0.4s ease-out;
     background: rgba(255, 255, 255, 0.1);
 }
-
 .rule-content.active { max-height: 2500px; }
 
 .rule-list { padding: 20px; list-style: none; }
@@ -124,7 +119,11 @@ body {
 .footer { text-align: center; padding: 40px; color: #6b7280; }
 
 /* 6. КУРСОР (ПК) */
-.cursor-wrapper { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; }
+.cursor-wrapper { 
+    position: fixed; top: 0; left: 0; 
+    pointer-events: none; /* Пропускает клики */
+    z-index: 9999; 
+}
 .liquid-blob {
     position: absolute; width: 150px; height: 150px;
     background: radial-gradient(circle, rgba(167, 139, 250, 0.4) 0%, rgba(255, 255, 255, 0) 70%);
@@ -137,13 +136,12 @@ body {
     box-shadow: 0 0 15px white; mix-blend-mode: overlay;
 }
 
-/* 7. МОБИЛЬНАЯ ОПТИМИЗАЦИЯ (ИСПРАВЛЕНО) */
+/* 7. МОБИЛЬНАЯ ОПТИМИЗАЦИЯ */
 @media (max-width: 991px) {
-    /* Выключаем курсор и фильтры */
+    * { cursor: auto !important; } /* Возвращаем курсор на тач-устройствах */
+    
     .cursor-wrapper, svg { display: none !important; }
-    body { cursor: default !important; }
 
-    /* Выключаем анимацию появления - на мобилках всё сразу */
     .header, .card, .footer {
         opacity: 1 !important;
         transform: none !important;
@@ -154,8 +152,6 @@ body {
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
     }
-
-    .rule-title { padding: 22px 20px; }
 
     .rule-list li {
         opacity: 1 !important;
