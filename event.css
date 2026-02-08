@@ -1,4 +1,4 @@
-/* Базовые стили */
+/* 1. БАЗОВЫЕ СТИЛИ */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -17,10 +17,10 @@ body {
     color: #1f2933;
     line-height: 1.6;
     min-height: 100vh;
-    overflow-x: hidden; /* Запрещаем горизонтальный скролл */
+    overflow-x: hidden;
 }
 
-/* Фон */
+/* 2. АНИМИРОВАННЫЙ ФОН */
 .bg-blobs {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -43,21 +43,36 @@ body {
     to { transform: translate(30px, -30px) scale(1.1); } 
 }
 
-/* Контент */
+/* 3. ЭФФЕКТ ПОЯВЛЕНИЯ (ДЛЯ ПК) */
+.header, .card, .footer {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.header { animation-delay: 0.1s; }
+.card:nth-of-type(1) { animation-delay: 0.2s; }
+.card:nth-of-type(2) { animation-delay: 0.3s; }
+.card:nth-of-type(3) { animation-delay: 0.4s; }
+.footer { animation-delay: 0.5s; }
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 4. КОНТЕНТ И КАРТОЧКИ */
 .header { text-align: center; padding: 60px 20px; }
 .header h1 { 
-    font-size: clamp(2rem, 8vw, 3.5rem); /* Адаптивный размер шрифта */
+    font-size: clamp(2rem, 8vw, 3.5rem);
     background: linear-gradient(135deg, #4f46e5, #9333ea);
     -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 
-.container {
-    max-width: 900px;
-    margin: 0 auto 60px;
-    padding: 0 15px;
-}
+.container { max-width: 900px; margin: 0 auto 60px; padding: 0 15px; }
 
-/* Карточки */
 .card {
     background: var(--glass-bg);
     backdrop-filter: blur(20px) saturate(180%);
@@ -67,16 +82,15 @@ body {
     padding: clamp(20px, 5vw, 32px);
     margin-bottom: 24px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    /* На мобильных убираем hidden, чтобы не резало контент */
-    overflow: visible; 
 }
 
-/* Аккордеон */
+/* 5. АККОРДЕОН */
 .rule {
     margin-bottom: 12px;
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.3);
     border: 1px solid rgba(255,255,255,0.2);
+    transition: background 0.3s ease;
 }
 
 .rule-title {
@@ -84,26 +98,22 @@ body {
     border: none; background: transparent;
     text-align: left; font-weight: 600;
     display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer;
 }
 
 .rule-content {
     max-height: 0;
-    overflow: hidden; /* Скрыто по умолчанию */
-    transition: max-height 0.4s ease-out; /* Плавное открытие */
+    overflow: hidden;
+    transition: max-height 0.4s ease-out;
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* Когда активно - разрешаем большую высоту */
-.rule-content.active {
-    max-height: 2500px; /* Большой запас для мобильных */
-}
+.rule-content.active { max-height: 2500px; }
 
 .rule-list { padding: 20px; list-style: none; }
 .rule-list li {
-    margin-bottom: 12px;
-    padding-left: 20px;
-    position: relative;
-    opacity: 0; transform: translateY(10px);
+    margin-bottom: 12px; padding-left: 20px;
+    position: relative; opacity: 0; transform: translateY(10px);
 }
 .rule-list li.visible {
     opacity: 1; transform: translateY(0);
@@ -113,7 +123,7 @@ body {
 
 .footer { text-align: center; padding: 40px; color: #6b7280; }
 
-/* КУРСОР (только для ПК) */
+/* 6. КУРСОР (ПК) */
 .cursor-wrapper { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; }
 .liquid-blob {
     position: absolute; width: 150px; height: 150px;
@@ -127,73 +137,28 @@ body {
     box-shadow: 0 0 15px white; mix-blend-mode: overlay;
 }
 
-Отлично! Добавим красивую, плавную анимацию появления элементов при загрузке страницы. Этот эффект будет работать только на ПК, чтобы не тормозить телефоны.
-
-Что мы сделаем:
-Начальное скрытие: Все основные блоки (header, .card, footer) будут изначально скрыты (opacity: 0).
-
-Плавное появление: При загрузке страницы, эти блоки будут плавно "вылетать" снизу вверх и проявляться.
-
-Задержка: Каждый следующий блок будет появляться с небольшой задержкой, создавая эффект последовательного раскрытия контента.
-
-Оптимизация: На мобильных устройствах эта анимация будет отключена, и элементы будут видны сразу, чтобы обеспечить максимальную производительность.
-
-1. event.css (Финальная версия с анимацией загрузки)
-Добавьте эти стили в ваш event.css файл. Я поместил их в конец, чтобы они легко переопределялись для мобильных.
-
-CSS
-
-/* --- АНИМАЦИЯ ПОЯВЛЕНИЯ ПРИ ЗАГРУЗКЕ (ТОЛЬКО НА ПК) --- */
-.header, .card, .footer {
-    opacity: 0; /* Изначально скрыты */
-    transform: translateY(20px); /* Смещены немного вниз */
-    animation: fadeInUp 0.8s ease-out forwards; /* Анимация появления */
-}
-
-/* Задержки для последовательного появления */
-.header { animation-delay: 0.1s; }
-.card:nth-of-type(1) { animation-delay: 0.2s; }
-.card:nth-of-type(2) { animation-delay: 0.3s; } /* Если карточек больше, продолжайте n-th-of-type */
-.card:nth-of-type(3) { animation-delay: 0.4s; }
-.card:nth-of-type(4) { animation-delay: 0.5s; }
-.card:nth-of-type(5) { animation-delay: 0.6s; }
-.card:nth-of-type(6) { animation-delay: 0.7s; }
-.card:nth-of-type(7) { animation-delay: 0.8s; }
-.card:nth-of-type(8) { animation-delay: 0.9s; } /* Можете добавить больше, если есть */
-.footer { animation-delay: 1.0s; }
-
-
-@keyframes fadeInUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* === ОПТИМИЗАЦИЯ ПОД ТЕЛЕФОНЫ === */
+/* 7. МОБИЛЬНАЯ ОПТИМИЗАЦИЯ (ИСПРАВЛЕНО) */
 @media (max-width: 991px) {
-    .cursor-wrapper, svg { display: none !important; } /* Полностью удаляем тяжелые фильтры */
-    
+    /* Выключаем курсор и фильтры */
+    .cursor-wrapper, svg { display: none !important; }
     body { cursor: default !important; }
-    
-    .card {
-        backdrop-filter: blur(10px); /* Облегчаем блюр */
-        -webkit-backdrop-filter: blur(10px);
-    }
-    
-    .rule-title { padding: 22px 20px; } /* Увеличиваем зону нажатия */
-    
-    /* Сразу показываем текст, если анимация лагает */
-    .rule-list li {
-        opacity: 1;
-        transform: none;
-    }
-}
 
-.header, .card, .footer {
-        opacity: 1 !important; /* Сразу видимы */
+    /* Выключаем анимацию появления - на мобилках всё сразу */
+    .header, .card, .footer {
+        opacity: 1 !important;
         transform: none !important;
         animation: none !important;
-        transition: none !important;
+    }
+
+    .card {
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    .rule-title { padding: 22px 20px; }
+
+    .rule-list li {
+        opacity: 1 !important;
+        transform: none !important;
     }
 }
