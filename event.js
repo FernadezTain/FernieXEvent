@@ -63,3 +63,24 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
     }
 });
+// Эффект увеличения курсора при наведении на кнопки
+const interactiveElements = document.querySelectorAll('button, a, .rule-title');
+
+interactiveElements.forEach(el => {
+    el.addEventListener('mouseenter', () => {
+        const blob = document.querySelector('.liquid-blob');
+        if (blob) {
+            blob.style.width = '200px';
+            blob.style.height = '200px';
+            blob.style.transition = 'width 0.3s, height 0.3s';
+        }
+    });
+    
+    el.addEventListener('mouseleave', () => {
+        const blob = document.querySelector('.liquid-blob');
+        if (blob) {
+            blob.style.width = '150px';
+            blob.style.height = '150px';
+        }
+    });
+});
