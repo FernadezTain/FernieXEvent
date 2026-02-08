@@ -66,36 +66,3 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     });
 });
-// Добавьте эту функцию в ваш event.js
-function createParticles() {
-    const container = document.createElement('div');
-    container.className = 'floating-particles';
-    
-    for (let i = 0; i < 20; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        
-        const size = Math.random() * 15 + 5;
-        const posX = Math.random() * 100;
-        const delay = Math.random() * 20;
-        const duration = Math.random() * 10 + 15;
-        
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        particle.style.left = `${posX}%`;
-        particle.style.top = `100%`;
-        particle.style.animationDelay = `${delay}s`;
-        particle.style.animationDuration = `${duration}s`;
-        particle.style.opacity = Math.random() * 0.6 + 0.1;
-        
-        container.appendChild(particle);
-    }
-    
-    document.body.appendChild(container);
-}
-
-// Вызовите функцию в DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
-    createParticles();
-    // ... остальной ваш код
-});
